@@ -933,7 +933,7 @@ var require_util = __commonJS({
     function bufferToLowerCasedHeaderName(value) {
       return tree.lookup(value) ?? value.toString("latin1").toLowerCase();
     }
-    function parseHeaders(headers, obj) {
+    function parseHeaders2(headers, obj) {
       if (obj === void 0) obj = {};
       for (let i = 0; i < headers.length; i += 2) {
         const key = headerNameToString(headers[i]);
@@ -1199,7 +1199,7 @@ var require_util = __commonJS({
       removeAllListeners,
       errorRequest,
       parseRawHeaders,
-      parseHeaders,
+      parseHeaders: parseHeaders2,
       parseKeepAliveTimeout,
       destroy,
       bodyLength,
@@ -1651,11 +1651,11 @@ var require_request = __commonJS({
        * @param {(headers: import('node:http2').IncomingHttpHeaders) => Buffer[]} parseHeaders
        * @param {string} [statusText]
        */
-      onUpgradeResponse(statusCode, headers, parseHeaders, statusText = "") {
+      onUpgradeResponse(statusCode, headers, parseHeaders2, statusText = "") {
         assert(!this.aborted);
         assert(this.completed);
         if (channels.headers.hasSubscribers) {
-          this.#publishUpgradeHeaders(statusCode, parseHeaders(headers), statusText);
+          this.#publishUpgradeHeaders(statusCode, parseHeaders2(headers), statusText);
         }
         this.#publishUpgradeTrailers();
       }
@@ -1825,7 +1825,7 @@ var require_dispatcher = __commonJS({
       }
       compose(...args) {
         const interceptors = Array.isArray(args[0]) ? args[0] : args;
-        let dispatch = this.dispatch.bind(this);
+        let dispatch2 = this.dispatch.bind(this);
         for (const interceptor of interceptors) {
           if (interceptor == null) {
             continue;
@@ -1833,21 +1833,21 @@ var require_dispatcher = __commonJS({
           if (typeof interceptor !== "function") {
             throw new TypeError(`invalid interceptor, expected function received ${typeof interceptor}`);
           }
-          dispatch = interceptor(dispatch);
-          if (dispatch == null || typeof dispatch !== "function" || dispatch.length !== 2) {
+          dispatch2 = interceptor(dispatch2);
+          if (dispatch2 == null || typeof dispatch2 !== "function" || dispatch2.length !== 2) {
             throw new TypeError("invalid interceptor");
           }
         }
-        return new ComposedDispatcher(this, dispatch);
+        return new ComposedDispatcher(this, dispatch2);
       }
     };
     var ComposedDispatcher = class extends Dispatcher {
       #dispatcher = null;
       #dispatch = null;
-      constructor(dispatcher, dispatch) {
+      constructor(dispatcher, dispatch2) {
         super();
         this.#dispatcher = dispatcher;
-        this.#dispatch = dispatch;
+        this.#dispatch = dispatch2;
       }
       dispatch(...args) {
         this.#dispatch(...args);
@@ -1915,9 +1915,9 @@ var require_dispatcher_base = __commonJS({
       }
       close(callback) {
         if (callback === void 0) {
-          return new Promise((resolve2, reject) => {
+          return new Promise((resolve3, reject) => {
             this.close((err, data) => {
-              return err ? reject(err) : resolve2(data);
+              return err ? reject(err) : resolve3(data);
             });
           });
         }
@@ -1955,12 +1955,12 @@ var require_dispatcher_base = __commonJS({
           err = null;
         }
         if (callback === void 0) {
-          return new Promise((resolve2, reject) => {
+          return new Promise((resolve3, reject) => {
             this.destroy(err, (err2, data) => {
               return err2 ? (
                 /* istanbul ignore next: should never error */
                 reject(err2)
-              ) : resolve2(data);
+              ) : resolve3(data);
             });
           });
         }
@@ -1997,12 +1997,12 @@ var require_dispatcher_base = __commonJS({
           this[kInterceptedDispatch] = this[kDispatch];
           return this[kDispatch](opts, handler);
         }
-        let dispatch = this[kDispatch].bind(this);
+        let dispatch2 = this[kDispatch].bind(this);
         for (let i = this[kInterceptors].length - 1; i >= 0; i--) {
-          dispatch = this[kInterceptors][i](dispatch);
+          dispatch2 = this[kInterceptors][i](dispatch2);
         }
-        this[kInterceptedDispatch] = dispatch;
-        return dispatch(opts, handler);
+        this[kInterceptedDispatch] = dispatch2;
+        return dispatch2(opts, handler);
       }
       dispatch(opts, handler) {
         if (!handler || typeof handler !== "object") {
@@ -2522,114 +2522,114 @@ var require_constants2 = __commonJS({
       LENIENT_FLAGS2[LENIENT_FLAGS2["CHUNKED_LENGTH"] = 2] = "CHUNKED_LENGTH";
       LENIENT_FLAGS2[LENIENT_FLAGS2["KEEP_ALIVE"] = 4] = "KEEP_ALIVE";
     })(LENIENT_FLAGS = exports.LENIENT_FLAGS || (exports.LENIENT_FLAGS = {}));
-    var METHODS;
-    (function(METHODS2) {
-      METHODS2[METHODS2["DELETE"] = 0] = "DELETE";
-      METHODS2[METHODS2["GET"] = 1] = "GET";
-      METHODS2[METHODS2["HEAD"] = 2] = "HEAD";
-      METHODS2[METHODS2["POST"] = 3] = "POST";
-      METHODS2[METHODS2["PUT"] = 4] = "PUT";
-      METHODS2[METHODS2["CONNECT"] = 5] = "CONNECT";
-      METHODS2[METHODS2["OPTIONS"] = 6] = "OPTIONS";
-      METHODS2[METHODS2["TRACE"] = 7] = "TRACE";
-      METHODS2[METHODS2["COPY"] = 8] = "COPY";
-      METHODS2[METHODS2["LOCK"] = 9] = "LOCK";
-      METHODS2[METHODS2["MKCOL"] = 10] = "MKCOL";
-      METHODS2[METHODS2["MOVE"] = 11] = "MOVE";
-      METHODS2[METHODS2["PROPFIND"] = 12] = "PROPFIND";
-      METHODS2[METHODS2["PROPPATCH"] = 13] = "PROPPATCH";
-      METHODS2[METHODS2["SEARCH"] = 14] = "SEARCH";
-      METHODS2[METHODS2["UNLOCK"] = 15] = "UNLOCK";
-      METHODS2[METHODS2["BIND"] = 16] = "BIND";
-      METHODS2[METHODS2["REBIND"] = 17] = "REBIND";
-      METHODS2[METHODS2["UNBIND"] = 18] = "UNBIND";
-      METHODS2[METHODS2["ACL"] = 19] = "ACL";
-      METHODS2[METHODS2["REPORT"] = 20] = "REPORT";
-      METHODS2[METHODS2["MKACTIVITY"] = 21] = "MKACTIVITY";
-      METHODS2[METHODS2["CHECKOUT"] = 22] = "CHECKOUT";
-      METHODS2[METHODS2["MERGE"] = 23] = "MERGE";
-      METHODS2[METHODS2["M-SEARCH"] = 24] = "M-SEARCH";
-      METHODS2[METHODS2["NOTIFY"] = 25] = "NOTIFY";
-      METHODS2[METHODS2["SUBSCRIBE"] = 26] = "SUBSCRIBE";
-      METHODS2[METHODS2["UNSUBSCRIBE"] = 27] = "UNSUBSCRIBE";
-      METHODS2[METHODS2["PATCH"] = 28] = "PATCH";
-      METHODS2[METHODS2["PURGE"] = 29] = "PURGE";
-      METHODS2[METHODS2["MKCALENDAR"] = 30] = "MKCALENDAR";
-      METHODS2[METHODS2["LINK"] = 31] = "LINK";
-      METHODS2[METHODS2["UNLINK"] = 32] = "UNLINK";
-      METHODS2[METHODS2["SOURCE"] = 33] = "SOURCE";
-      METHODS2[METHODS2["PRI"] = 34] = "PRI";
-      METHODS2[METHODS2["DESCRIBE"] = 35] = "DESCRIBE";
-      METHODS2[METHODS2["ANNOUNCE"] = 36] = "ANNOUNCE";
-      METHODS2[METHODS2["SETUP"] = 37] = "SETUP";
-      METHODS2[METHODS2["PLAY"] = 38] = "PLAY";
-      METHODS2[METHODS2["PAUSE"] = 39] = "PAUSE";
-      METHODS2[METHODS2["TEARDOWN"] = 40] = "TEARDOWN";
-      METHODS2[METHODS2["GET_PARAMETER"] = 41] = "GET_PARAMETER";
-      METHODS2[METHODS2["SET_PARAMETER"] = 42] = "SET_PARAMETER";
-      METHODS2[METHODS2["REDIRECT"] = 43] = "REDIRECT";
-      METHODS2[METHODS2["RECORD"] = 44] = "RECORD";
-      METHODS2[METHODS2["FLUSH"] = 45] = "FLUSH";
-    })(METHODS = exports.METHODS || (exports.METHODS = {}));
+    var METHODS2;
+    (function(METHODS3) {
+      METHODS3[METHODS3["DELETE"] = 0] = "DELETE";
+      METHODS3[METHODS3["GET"] = 1] = "GET";
+      METHODS3[METHODS3["HEAD"] = 2] = "HEAD";
+      METHODS3[METHODS3["POST"] = 3] = "POST";
+      METHODS3[METHODS3["PUT"] = 4] = "PUT";
+      METHODS3[METHODS3["CONNECT"] = 5] = "CONNECT";
+      METHODS3[METHODS3["OPTIONS"] = 6] = "OPTIONS";
+      METHODS3[METHODS3["TRACE"] = 7] = "TRACE";
+      METHODS3[METHODS3["COPY"] = 8] = "COPY";
+      METHODS3[METHODS3["LOCK"] = 9] = "LOCK";
+      METHODS3[METHODS3["MKCOL"] = 10] = "MKCOL";
+      METHODS3[METHODS3["MOVE"] = 11] = "MOVE";
+      METHODS3[METHODS3["PROPFIND"] = 12] = "PROPFIND";
+      METHODS3[METHODS3["PROPPATCH"] = 13] = "PROPPATCH";
+      METHODS3[METHODS3["SEARCH"] = 14] = "SEARCH";
+      METHODS3[METHODS3["UNLOCK"] = 15] = "UNLOCK";
+      METHODS3[METHODS3["BIND"] = 16] = "BIND";
+      METHODS3[METHODS3["REBIND"] = 17] = "REBIND";
+      METHODS3[METHODS3["UNBIND"] = 18] = "UNBIND";
+      METHODS3[METHODS3["ACL"] = 19] = "ACL";
+      METHODS3[METHODS3["REPORT"] = 20] = "REPORT";
+      METHODS3[METHODS3["MKACTIVITY"] = 21] = "MKACTIVITY";
+      METHODS3[METHODS3["CHECKOUT"] = 22] = "CHECKOUT";
+      METHODS3[METHODS3["MERGE"] = 23] = "MERGE";
+      METHODS3[METHODS3["M-SEARCH"] = 24] = "M-SEARCH";
+      METHODS3[METHODS3["NOTIFY"] = 25] = "NOTIFY";
+      METHODS3[METHODS3["SUBSCRIBE"] = 26] = "SUBSCRIBE";
+      METHODS3[METHODS3["UNSUBSCRIBE"] = 27] = "UNSUBSCRIBE";
+      METHODS3[METHODS3["PATCH"] = 28] = "PATCH";
+      METHODS3[METHODS3["PURGE"] = 29] = "PURGE";
+      METHODS3[METHODS3["MKCALENDAR"] = 30] = "MKCALENDAR";
+      METHODS3[METHODS3["LINK"] = 31] = "LINK";
+      METHODS3[METHODS3["UNLINK"] = 32] = "UNLINK";
+      METHODS3[METHODS3["SOURCE"] = 33] = "SOURCE";
+      METHODS3[METHODS3["PRI"] = 34] = "PRI";
+      METHODS3[METHODS3["DESCRIBE"] = 35] = "DESCRIBE";
+      METHODS3[METHODS3["ANNOUNCE"] = 36] = "ANNOUNCE";
+      METHODS3[METHODS3["SETUP"] = 37] = "SETUP";
+      METHODS3[METHODS3["PLAY"] = 38] = "PLAY";
+      METHODS3[METHODS3["PAUSE"] = 39] = "PAUSE";
+      METHODS3[METHODS3["TEARDOWN"] = 40] = "TEARDOWN";
+      METHODS3[METHODS3["GET_PARAMETER"] = 41] = "GET_PARAMETER";
+      METHODS3[METHODS3["SET_PARAMETER"] = 42] = "SET_PARAMETER";
+      METHODS3[METHODS3["REDIRECT"] = 43] = "REDIRECT";
+      METHODS3[METHODS3["RECORD"] = 44] = "RECORD";
+      METHODS3[METHODS3["FLUSH"] = 45] = "FLUSH";
+    })(METHODS2 = exports.METHODS || (exports.METHODS = {}));
     exports.METHODS_HTTP = [
-      METHODS.DELETE,
-      METHODS.GET,
-      METHODS.HEAD,
-      METHODS.POST,
-      METHODS.PUT,
-      METHODS.CONNECT,
-      METHODS.OPTIONS,
-      METHODS.TRACE,
-      METHODS.COPY,
-      METHODS.LOCK,
-      METHODS.MKCOL,
-      METHODS.MOVE,
-      METHODS.PROPFIND,
-      METHODS.PROPPATCH,
-      METHODS.SEARCH,
-      METHODS.UNLOCK,
-      METHODS.BIND,
-      METHODS.REBIND,
-      METHODS.UNBIND,
-      METHODS.ACL,
-      METHODS.REPORT,
-      METHODS.MKACTIVITY,
-      METHODS.CHECKOUT,
-      METHODS.MERGE,
-      METHODS["M-SEARCH"],
-      METHODS.NOTIFY,
-      METHODS.SUBSCRIBE,
-      METHODS.UNSUBSCRIBE,
-      METHODS.PATCH,
-      METHODS.PURGE,
-      METHODS.MKCALENDAR,
-      METHODS.LINK,
-      METHODS.UNLINK,
-      METHODS.PRI,
+      METHODS2.DELETE,
+      METHODS2.GET,
+      METHODS2.HEAD,
+      METHODS2.POST,
+      METHODS2.PUT,
+      METHODS2.CONNECT,
+      METHODS2.OPTIONS,
+      METHODS2.TRACE,
+      METHODS2.COPY,
+      METHODS2.LOCK,
+      METHODS2.MKCOL,
+      METHODS2.MOVE,
+      METHODS2.PROPFIND,
+      METHODS2.PROPPATCH,
+      METHODS2.SEARCH,
+      METHODS2.UNLOCK,
+      METHODS2.BIND,
+      METHODS2.REBIND,
+      METHODS2.UNBIND,
+      METHODS2.ACL,
+      METHODS2.REPORT,
+      METHODS2.MKACTIVITY,
+      METHODS2.CHECKOUT,
+      METHODS2.MERGE,
+      METHODS2["M-SEARCH"],
+      METHODS2.NOTIFY,
+      METHODS2.SUBSCRIBE,
+      METHODS2.UNSUBSCRIBE,
+      METHODS2.PATCH,
+      METHODS2.PURGE,
+      METHODS2.MKCALENDAR,
+      METHODS2.LINK,
+      METHODS2.UNLINK,
+      METHODS2.PRI,
       // TODO(indutny): should we allow it with HTTP?
-      METHODS.SOURCE
+      METHODS2.SOURCE
     ];
     exports.METHODS_ICE = [
-      METHODS.SOURCE
+      METHODS2.SOURCE
     ];
     exports.METHODS_RTSP = [
-      METHODS.OPTIONS,
-      METHODS.DESCRIBE,
-      METHODS.ANNOUNCE,
-      METHODS.SETUP,
-      METHODS.PLAY,
-      METHODS.PAUSE,
-      METHODS.TEARDOWN,
-      METHODS.GET_PARAMETER,
-      METHODS.SET_PARAMETER,
-      METHODS.REDIRECT,
-      METHODS.RECORD,
-      METHODS.FLUSH,
+      METHODS2.OPTIONS,
+      METHODS2.DESCRIBE,
+      METHODS2.ANNOUNCE,
+      METHODS2.SETUP,
+      METHODS2.PLAY,
+      METHODS2.PAUSE,
+      METHODS2.TEARDOWN,
+      METHODS2.GET_PARAMETER,
+      METHODS2.SET_PARAMETER,
+      METHODS2.REDIRECT,
+      METHODS2.RECORD,
+      METHODS2.FLUSH,
       // For AirPlay
-      METHODS.GET,
-      METHODS.POST
+      METHODS2.GET,
+      METHODS2.POST
     ];
-    exports.METHOD_MAP = utils_1.enumToMap(METHODS);
+    exports.METHOD_MAP = utils_1.enumToMap(METHODS2);
     exports.H_METHOD_MAP = {};
     Object.keys(exports.METHOD_MAP).forEach((key) => {
       if (/^H/.test(key)) {
@@ -4227,8 +4227,8 @@ var require_util2 = __commonJS({
     function createDeferredPromise() {
       let res;
       let rej;
-      const promise = new Promise((resolve2, reject) => {
-        res = resolve2;
+      const promise = new Promise((resolve3, reject) => {
+        res = resolve3;
         rej = reject;
       });
       return { promise, resolve: res, reject: rej };
@@ -5291,11 +5291,11 @@ Content-Type: ${value.type || "application/octet-stream"}\r
         }
         source = object;
         action = async function* () {
-          for (const part of blobParts) {
-            if (part.stream) {
-              yield* part.stream();
+          for (const part2 of blobParts) {
+            if (part2.stream) {
+              yield* part2.stream();
             } else {
-              yield part;
+              yield part2;
             }
           }
         };
@@ -6480,12 +6480,12 @@ upgrade: ${upgrade}\r
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve2, reject) => {
+      const waitForDrain = () => new Promise((resolve3, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve2;
+          callback = resolve3;
         }
       });
       socket.on("close", onDrain).on("drain", onDrain);
@@ -7157,12 +7157,12 @@ var require_client_h2 = __commonJS({
           cb();
         }
       }
-      const waitForDrain = () => new Promise((resolve2, reject) => {
+      const waitForDrain = () => new Promise((resolve3, reject) => {
         assert(callback === null);
         if (socket[kError]) {
           reject(socket[kError]);
         } else {
-          callback = resolve2;
+          callback = resolve3;
         }
       });
       h2stream.on("close", onDrain).on("drain", onDrain);
@@ -7216,12 +7216,12 @@ var require_redirect_handler = __commonJS({
       }
     };
     var RedirectHandler = class {
-      constructor(dispatch, maxRedirections, opts, handler) {
+      constructor(dispatch2, maxRedirections, opts, handler) {
         if (maxRedirections != null && (!Number.isInteger(maxRedirections) || maxRedirections < 0)) {
           throw new InvalidArgumentError("maxRedirections must be a positive number");
         }
         util.validateHandler(handler, opts.method, opts.upgrade);
-        this.dispatch = dispatch;
+        this.dispatch = dispatch2;
         this.location = null;
         this.abort = null;
         this.opts = { ...opts, maxRedirections: 0 };
@@ -7358,15 +7358,15 @@ var require_redirect_interceptor = __commonJS({
     "use strict";
     var RedirectHandler = require_redirect_handler();
     function createRedirectInterceptor({ maxRedirections: defaultMaxRedirections }) {
-      return (dispatch) => {
+      return (dispatch2) => {
         return function Intercept(opts, handler) {
           const { maxRedirections = defaultMaxRedirections } = opts;
           if (!maxRedirections) {
-            return dispatch(opts, handler);
+            return dispatch2(opts, handler);
           }
-          const redirectHandler = new RedirectHandler(dispatch, maxRedirections, opts, handler);
+          const redirectHandler = new RedirectHandler(dispatch2, maxRedirections, opts, handler);
           opts = { ...opts, maxRedirections: 0 };
-          return dispatch(opts, redirectHandler);
+          return dispatch2(opts, redirectHandler);
         };
       };
     }
@@ -7640,16 +7640,16 @@ var require_client = __commonJS({
         return this[kNeedDrain] < 2;
       }
       async [kClose]() {
-        return new Promise((resolve2) => {
+        return new Promise((resolve3) => {
           if (this[kSize]) {
-            this[kClosedResolve] = resolve2;
+            this[kClosedResolve] = resolve3;
           } else {
-            resolve2(null);
+            resolve3(null);
           }
         });
       }
       async [kDestroy](err) {
-        return new Promise((resolve2) => {
+        return new Promise((resolve3) => {
           const requests = this[kQueue].splice(this[kPendingIdx]);
           for (let i = 0; i < requests.length; i++) {
             const request2 = requests[i];
@@ -7660,7 +7660,7 @@ var require_client = __commonJS({
               this[kClosedResolve]();
               this[kClosedResolve] = null;
             }
-            resolve2(null);
+            resolve3(null);
           };
           if (this[kHTTPContext]) {
             this[kHTTPContext].destroy(err, callback);
@@ -7711,7 +7711,7 @@ var require_client = __commonJS({
         });
       }
       try {
-        const socket = await new Promise((resolve2, reject) => {
+        const socket = await new Promise((resolve3, reject) => {
           client[kConnector]({
             host,
             hostname,
@@ -7723,7 +7723,7 @@ var require_client = __commonJS({
             if (err) {
               reject(err);
             } else {
-              resolve2(socket2);
+              resolve3(socket2);
             }
           });
         });
@@ -8059,8 +8059,8 @@ var require_pool_base = __commonJS({
         if (this[kQueue].isEmpty()) {
           await Promise.all(this[kClients].map((c) => c.close()));
         } else {
-          await new Promise((resolve2) => {
-            this[kClosedResolve] = resolve2;
+          await new Promise((resolve3) => {
+            this[kClosedResolve] = resolve3;
           });
         }
       }
@@ -8819,7 +8819,7 @@ var require_retry_handler = __commonJS({
     var { RequestRetryError } = require_errors();
     var {
       isDisturbed,
-      parseHeaders,
+      parseHeaders: parseHeaders2,
       parseRangeHeader,
       wrapRequestBody
     } = require_util();
@@ -8977,7 +8977,7 @@ var require_retry_handler = __commonJS({
         setTimeout(() => cb(null), retryTimeout);
       }
       onHeaders(statusCode, rawHeaders, resume, statusMessage) {
-        const headers = parseHeaders(rawHeaders);
+        const headers = parseHeaders2(rawHeaders);
         this.retryCount += 1;
         if (statusCode >= 300) {
           if (!this.headersSent && this.retryOpts.statusCodes.includes(statusCode) === false) {
@@ -9326,7 +9326,7 @@ var require_readable = __commonJS({
         if (this._readableState.closeEmitted) {
           return null;
         }
-        return await new Promise((resolve2, reject) => {
+        return await new Promise((resolve3, reject) => {
           if (this[kContentLength] > limit) {
             this.destroy(new AbortError());
           }
@@ -9339,7 +9339,7 @@ var require_readable = __commonJS({
             if (signal?.aborted) {
               reject(signal.reason ?? new AbortError());
             } else {
-              resolve2(null);
+              resolve3(null);
             }
           }).on("error", noop).on("data", function(chunk) {
             limit -= chunk.length;
@@ -9358,7 +9358,7 @@ var require_readable = __commonJS({
     }
     async function consume(stream, type) {
       assert(!stream[kConsume]);
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         if (isUnusable(stream)) {
           const rState = stream._readableState;
           if (rState.destroyed && rState.closeEmitted === false) {
@@ -9375,7 +9375,7 @@ var require_readable = __commonJS({
             stream[kConsume] = {
               type,
               stream,
-              resolve: resolve2,
+              resolve: resolve3,
               reject,
               length: 0,
               body: []
@@ -9445,18 +9445,18 @@ var require_readable = __commonJS({
       return buffer;
     }
     function consumeEnd(consume2) {
-      const { type, body, resolve: resolve2, stream, length } = consume2;
+      const { type, body, resolve: resolve3, stream, length } = consume2;
       try {
         if (type === "text") {
-          resolve2(chunksDecode(body, length));
+          resolve3(chunksDecode(body, length));
         } else if (type === "json") {
-          resolve2(JSON.parse(chunksDecode(body, length)));
+          resolve3(JSON.parse(chunksDecode(body, length)));
         } else if (type === "arrayBuffer") {
-          resolve2(chunksConcat(body, length).buffer);
+          resolve3(chunksConcat(body, length).buffer);
         } else if (type === "blob") {
-          resolve2(new Blob(body, { type: stream[kContentType] }));
+          resolve3(new Blob(body, { type: stream[kContentType] }));
         } else if (type === "bytes") {
-          resolve2(chunksConcat(body, length));
+          resolve3(chunksConcat(body, length));
         }
         consumeFinish(consume2);
       } catch (err) {
@@ -9713,9 +9713,9 @@ var require_api_request = __commonJS({
     };
     function request2(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           request2.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -9938,9 +9938,9 @@ var require_api_stream = __commonJS({
     };
     function stream(opts, factory, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           stream.call(this, opts, factory, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10225,9 +10225,9 @@ var require_api_upgrade = __commonJS({
     };
     function upgrade(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           upgrade.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10319,9 +10319,9 @@ var require_api_connect = __commonJS({
     };
     function connect(opts, callback) {
       if (callback === void 0) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           connect.call(this, opts, (err, data) => {
-            return err ? reject(err) : resolve2(data);
+            return err ? reject(err) : resolve3(data);
           });
         });
       }
@@ -10548,11 +10548,11 @@ var require_mock_utils = __commonJS({
       return newMockDispatch;
     }
     function deleteMockDispatch(mockDispatches, key) {
-      const index = mockDispatches.findIndex((dispatch) => {
-        if (!dispatch.consumed) {
+      const index = mockDispatches.findIndex((dispatch2) => {
+        if (!dispatch2.consumed) {
           return false;
         }
-        return matchKey(dispatch, key);
+        return matchKey(dispatch2, key);
       });
       if (index !== -1) {
         mockDispatches.splice(index, 1);
@@ -10642,7 +10642,7 @@ var require_mock_utils = __commonJS({
       const agent = this[kMockAgent];
       const origin = this[kOrigin];
       const originalDispatch = this[kOriginalDispatch];
-      return function dispatch(opts, handler) {
+      return function dispatch2(opts, handler) {
         if (agent.isMockActive) {
           try {
             mockDispatch.call(this, opts, handler);
@@ -11152,7 +11152,7 @@ var require_mock_agent = __commonJS({
       }
       pendingInterceptors() {
         const mockAgentClients = this[kClients];
-        return Array.from(mockAgentClients.entries()).flatMap(([origin, scope]) => scope[kDispatches].map((dispatch) => ({ ...dispatch, origin }))).filter(({ pending }) => pending);
+        return Array.from(mockAgentClients.entries()).flatMap(([origin, scope]) => scope[kDispatches].map((dispatch2) => ({ ...dispatch2, origin }))).filter(({ pending }) => pending);
       }
       assertNoPendingInterceptors({ pendingInterceptorsFormatter = new PendingInterceptorsFormatter() } = {}) {
         const pending = this.pendingInterceptors();
@@ -11249,19 +11249,19 @@ var require_redirect = __commonJS({
     var RedirectHandler = require_redirect_handler();
     module.exports = (opts) => {
       const globalMaxRedirections = opts?.maxRedirections;
-      return (dispatch) => {
+      return (dispatch2) => {
         return function redirectInterceptor(opts2, handler) {
           const { maxRedirections = globalMaxRedirections, ...baseOpts } = opts2;
           if (!maxRedirections) {
-            return dispatch(opts2, handler);
+            return dispatch2(opts2, handler);
           }
           const redirectHandler = new RedirectHandler(
-            dispatch,
+            dispatch2,
             maxRedirections,
             opts2,
             handler
           );
-          return dispatch(baseOpts, redirectHandler);
+          return dispatch2(baseOpts, redirectHandler);
         };
       };
     };
@@ -11274,15 +11274,15 @@ var require_retry = __commonJS({
     "use strict";
     var RetryHandler = require_retry_handler();
     module.exports = (globalOpts) => {
-      return (dispatch) => {
+      return (dispatch2) => {
         return function retryInterceptor(opts, handler) {
-          return dispatch(
+          return dispatch2(
             opts,
             new RetryHandler(
               { ...opts, retryOptions: { ...globalOpts, ...opts.retryOptions } },
               {
                 handler,
-                dispatch
+                dispatch: dispatch2
               }
             )
           );
@@ -11375,14 +11375,14 @@ var require_dump = __commonJS({
     function createDumpInterceptor({ maxSize: defaultMaxSize } = {
       maxSize: 1024 * 1024
     }) {
-      return (dispatch) => {
+      return (dispatch2) => {
         return function Intercept(opts, handler) {
           const { dumpMaxSize = defaultMaxSize } = opts;
           const dumpHandler = new DumpHandler(
             { maxSize: dumpMaxSize },
             handler
           );
-          return dispatch(opts, dumpHandler);
+          return dispatch2(opts, dumpHandler);
         };
       };
     }
@@ -11571,13 +11571,13 @@ var require_dns = __commonJS({
       #dispatch = null;
       #handler = null;
       #origin = null;
-      constructor(state, { origin, handler, dispatch }, opts) {
+      constructor(state, { origin, handler, dispatch: dispatch2 }, opts) {
         super(handler);
         this.#origin = origin;
         this.#handler = handler;
         this.#opts = { ...opts };
         this.#state = state;
-        this.#dispatch = dispatch;
+        this.#dispatch = dispatch2;
       }
       onError(err) {
         switch (err.code) {
@@ -11646,11 +11646,11 @@ var require_dns = __commonJS({
         maxItems: interceptorOpts?.maxItems ?? Infinity
       };
       const instance = new DNSInstance(opts);
-      return (dispatch) => {
+      return (dispatch2) => {
         return function dnsInterceptor(origDispatchOpts, handler) {
           const origin = origDispatchOpts.origin.constructor === URL ? origDispatchOpts.origin : new URL(origDispatchOpts.origin);
           if (isIP(origin.hostname) !== 0) {
-            return dispatch(origDispatchOpts, handler);
+            return dispatch2(origDispatchOpts, handler);
           }
           instance.runLookup(origin, origDispatchOpts, (err, newOrigin) => {
             if (err) {
@@ -11667,9 +11667,9 @@ var require_dns = __commonJS({
                 ...origDispatchOpts.headers
               }
             };
-            dispatch(
+            dispatch2(
               dispatchOpts,
-              instance.getHandler({ origin, dispatch, handler }, origDispatchOpts)
+              instance.getHandler({ origin, dispatch: dispatch2, handler }, origDispatchOpts)
             );
           });
           return true;
@@ -14081,7 +14081,7 @@ var require_fetch = __commonJS({
         })();
       }
       try {
-        const { body, status, statusText, headersList, socket } = await dispatch({ body: requestBody });
+        const { body, status, statusText, headersList, socket } = await dispatch2({ body: requestBody });
         if (socket) {
           response = makeResponse({ status, statusText, headersList, socket });
         } else {
@@ -14180,10 +14180,10 @@ var require_fetch = __commonJS({
         fetchParams.controller.connection.destroy();
       }
       return response;
-      function dispatch({ body }) {
+      function dispatch2({ body }) {
         const url = requestCurrentURL(request2);
         const agent = fetchParams.controller.dispatcher;
-        return new Promise((resolve2, reject) => agent.dispatch(
+        return new Promise((resolve3, reject) => agent.dispatch(
           {
             path: url.pathname + url.search,
             origin: url.origin,
@@ -14259,7 +14259,7 @@ var require_fetch = __commonJS({
                 }
               }
               const onError = this.onError.bind(this);
-              resolve2({
+              resolve3({
                 status,
                 statusText,
                 headersList,
@@ -14305,7 +14305,7 @@ var require_fetch = __commonJS({
               for (let i = 0; i < rawHeaders.length; i += 2) {
                 headersList.append(bufferToLowerCasedHeaderName(rawHeaders[i]), rawHeaders[i + 1].toString("latin1"), true);
               }
-              resolve2({
+              resolve3({
                 status,
                 statusText: STATUS_CODES[status],
                 headersList,
@@ -16031,11 +16031,11 @@ var require_util6 = __commonJS({
       if (cookie.sameSite) {
         out.push(`SameSite=${cookie.sameSite}`);
       }
-      for (const part of cookie.unparsed) {
-        if (!part.includes("=")) {
+      for (const part2 of cookie.unparsed) {
+        if (!part2.includes("=")) {
           throw new Error("Invalid unparsed");
         }
-        const [key, ...value] = part.split("=");
+        const [key, ...value] = part2.split("=");
         const trimmedKey = key.trim();
         const joinedValue = value.join("=");
         validateCookieName(trimmedKey);
@@ -18036,8 +18036,8 @@ var require_util8 = __commonJS({
       return true;
     }
     function delay(ms) {
-      return new Promise((resolve2) => {
-        setTimeout(resolve2, ms).unref();
+      return new Promise((resolve3) => {
+        setTimeout(resolve3, ms).unref();
       });
     }
     module.exports = {
@@ -18869,6 +18869,9 @@ var sessionPath = (root, env) => join(envDir(root, env), "session.json");
 var sessionLockPath = (root, env) => join(envDir(root, env), "session.lock");
 var contextDir = (root, env) => join(envDir(root, env), "context");
 var contextPath = (root, env, entitySet) => join(contextDir(root, env), `${entitySet}.md`);
+var standardIndexPath = (root, env) => join(envDir(root, env), "entities-standard.md");
+var userIndexPath = (root, env) => join(envDir(root, env), "entities-user.md");
+var metadataLockPath = (root, env) => join(envDir(root, env), "metadata.lock");
 var dumpRoot = (root, env) => join(envDir(root, env), "data");
 function dumpDir(root, env, now, id) {
   const stamp = now.toISOString().replace(/\..*$/, "").replace(/[-:]/g, "").replace("T", "-");
@@ -18931,6 +18934,8 @@ async function configuredEnvironments(root) {
 
 // src/common/sl.ts
 var import_undici = __toESM(require_undici(), 1);
+var MAX_RESPONSE_BYTES = 100 * 1024 * 1024;
+var bodyBytes = (response) => response.bytes ?? Buffer.from(response.text, "utf8");
 var insecureAgent = new import_undici.Agent({ connect: { rejectUnauthorized: false } });
 var defaultTransport = async (request2) => {
   const response = await (0, import_undici.fetch)(request2.url, {
@@ -18939,8 +18944,29 @@ var defaultTransport = async (request2) => {
     body: request2.body,
     dispatcher: insecureAgent
   });
-  return { status: response.status, headers: response.headers, text: await response.text() };
+  const declared = Number(response.headers.get("content-length"));
+  if (declared > MAX_RESPONSE_BYTES) throw tooLarge(declared);
+  const chunks = [];
+  let total = 0;
+  if (response.body) {
+    for await (const chunk of response.body) {
+      total += chunk.byteLength;
+      if (total > MAX_RESPONSE_BYTES) throw tooLarge(total);
+      chunks.push(chunk);
+    }
+  }
+  const bytes = Buffer.concat(chunks);
+  return {
+    status: response.status,
+    headers: response.headers,
+    bytes,
+    // Decoded on demand: a downloaded file is never turned into a string.
+    get text() {
+      return bytes.toString("utf8");
+    }
+  };
 };
+var tooLarge = (size) => new SboError("RESPONSE_TOO_LARGE", `The Service Layer answer is larger than ${MAX_RESPONSE_BYTES / 1024 / 1024} MB (${size} bytes so far) and was not read. Ask for less (a filter, $select, a page) or download it another way.`);
 var SlError = class extends Error {
   constructor(status, code, message) {
     super(message);
@@ -18968,6 +18994,7 @@ async function send(transport, request2) {
   try {
     return await transport(request2);
   } catch (e) {
+    if (e instanceof SboError) throw e;
     const cause = e.cause;
     const reason = cause?.code ?? cause?.message ?? e.message;
     throw new SboError("SL_UNREACHABLE", `Could not reach ${request2.url} (${reason}). Check the URL and that the Service Layer is running.`);
@@ -19035,13 +19062,42 @@ function keyFileName(plain) {
   if (name === "" || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(name)) name = "_" + name;
   return name + ".json";
 }
-var KEY_FIELDS = ["DocEntry", "CardCode", "ItemCode", "Code", "AbsEntry", "InternalCode", "ID", "Id", "Number"];
+var KEY_FIELDS = ["DocEntry", "CardCode", "ItemCode", "Code", "AbsEntry", "AbsoluteEntry", "InternalCode", "ID", "Id", "Number"];
 function recordKey(record, index) {
   for (const field of KEY_FIELDS) {
     const value = record[field];
     if (typeof value === "string" || typeof value === "number") return String(value);
   }
   return `row-${String(index + 1).padStart(6, "0")}`;
+}
+function objectKey(record) {
+  const key = recordKey(record, 0);
+  return key.startsWith("row-") ? "response" : key;
+}
+function safeFileName(name, fallback = "download.bin") {
+  let safe = (name.split(/[\\/]/).pop() ?? "").replace(/[\u0000-\u001f<>:"|?*]/g, "_").replace(/^\.+/, "").replace(/[. ]+$/, "").slice(0, 120);
+  if (safe === "") safe = fallback;
+  if (/^(con|prn|aux|nul|com\d|lpt\d)(\..*)?$/i.test(safe) || safe.toLowerCase() === "_index.json") safe = "_" + safe;
+  return safe;
+}
+async function writeFilesDump(input) {
+  const dir = await createDumpDir(input.root, input.environment, input.now, input.newId);
+  const folder = join2(dir, input.entitySet);
+  await mkdir2(folder, { recursive: true });
+  const taken = /* @__PURE__ */ new Set();
+  const names = input.files.map((f) => {
+    const base = safeFileName(f.name);
+    let name = base;
+    for (let n = 2; taken.has(name.toLowerCase()); n++) name = base.replace(/(\.[^.]*)?$/, (ext) => `~${n}${ext}`);
+    taken.add(name.toLowerCase());
+    return name;
+  });
+  await Promise.all(input.files.map((f, i) => writeFile2(join2(folder, names[i]), f.bytes)));
+  await writeFile2(
+    join2(dir, "_index.json"),
+    JSON.stringify({ date: input.now.toISOString(), query: input.query, entitySet: input.entitySet, count: names.length, ...input.extra, files: input.files.map((f, i) => ({ name: names[i], bytes: f.bytes.byteLength, contentType: f.contentType ?? null })) }, null, 2)
+  );
+  return { dir, paths: names.map((n) => join2(folder, n)), names };
 }
 async function createDumpDir(root, environment, now, newId) {
   await mkdir2(dumpRoot(root, environment), { recursive: true });
@@ -19097,8 +19153,8 @@ async function removeDump(root, environment, target) {
     name = matches[0];
   }
   const dir = join2(base, name ?? "");
-  const stat2 = name && dumpDate(name) ? await lstat(dir).catch(() => null) : null;
-  if (!stat2?.isDirectory()) throw new SboError("DUMP_NOT_FOUND", `No Volcado "${target}" in "${environment}". It may already have been removed.`);
+  const stat3 = name && dumpDate(name) ? await lstat(dir).catch(() => null) : null;
+  if (!stat3?.isDirectory()) throw new SboError("DUMP_NOT_FOUND", `No Volcado "${target}" in "${environment}". It may already have been removed.`);
   await rm2(dir, { recursive: true, force: true });
   return dir;
 }
@@ -19113,199 +19169,8 @@ async function sweepOldDumps(root, environment, now) {
   return removed;
 }
 
-// src/use/context.ts
-async function openUse(options, { sweep = true } = {}) {
-  const config = await readConfig(options.root);
-  const environment = await resolveEnvironment(options.root, options.environment);
-  const credentials = await readCredentials(options.root, environment);
-  const transport = options.transport ?? defaultTransport;
-  const now = options.now ?? (() => /* @__PURE__ */ new Date());
-  const newId = options.newId ?? (() => randomBytes(3).toString("hex"));
-  if (sweep) await sweepOldDumps(options.root, environment, now()).catch(() => {
-  });
-  return {
-    root: options.root,
-    config,
-    environment,
-    credentials,
-    transport,
-    now,
-    newId,
-    session: { root: options.root, environment, credentials, version: config.versionOData, transport, now }
-  };
-}
-
-// src/use/output.ts
-var success = (status, resumen) => ({ ok: true, status, resumen });
-function failure(e) {
-  if (e instanceof SlError) return { ok: false, status: e.status, resumen: null, error: { code: e.code, message: e.message } };
-  if (e instanceof SboError) return { ok: false, status: null, resumen: null, error: { code: e.code, message: e.message } };
-  return { ok: false, status: null, resumen: null, error: { code: "INTERNAL_ERROR", message: `Unexpected error: ${e.message}. Report it if it persists.` } };
-}
-
-// src/use/clean.ts
-async function cleanDump(options) {
-  try {
-    const ctx = await openUse(options, { sweep: false });
-    const removed = await removeDump(ctx.root, ctx.environment, options.target);
-    const old = await sweepOldDumps(ctx.root, ctx.environment, ctx.now());
-    return success(200, { entorno: ctx.environment, eliminado: removed, caducados: old.length });
-  } catch (e) {
-    return failure(e);
-  }
-}
-
-// src/use/object-context.ts
-import { mkdir as mkdir5, readFile as readFile3, rename as rename2, rm as rm5, writeFile as writeFile4 } from "node:fs/promises";
-import { dirname as dirname2 } from "node:path";
-
-// src/common/lock.ts
-import { mkdir as mkdir3, rm as rm3, stat } from "node:fs/promises";
-import { dirname } from "node:path";
-var sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-async function withLock(path, work, { staleMs = 3e4, waitMs = 6e4 } = {}) {
-  await mkdir3(dirname(path), { recursive: true });
-  const deadline = Date.now() + waitMs;
-  let held = false;
-  while (!held) {
-    try {
-      await mkdir3(path);
-      held = true;
-    } catch (e) {
-      if (e.code !== "EEXIST") throw e;
-      const age = await stat(path).then((s) => Date.now() - s.mtimeMs, () => null);
-      if (age !== null && age > staleMs) await rm3(path, { recursive: true, force: true });
-      else if (Date.now() > deadline) break;
-      else await sleep(50 + Math.random() * 100);
-    }
-  }
-  try {
-    return await work();
-  } finally {
-    if (held) await rm3(path, { recursive: true, force: true });
-  }
-}
-
-// src/use/rows.ts
-var PAGE_SIZE = 100;
-var DEFAULT_PAGE_TOP = 20;
-var DEFAULT_MAX_ROWS = 1e3;
-var MAX_KEYS_IN_OUTPUT = 50;
-function assertEntitySet(name) {
-  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
-    throw new SboError("INVALID_ENTITY_SET", `"${name}" is not an entity set name, for example BusinessPartners.`);
-  }
-}
-var encodeValue = (value) => encodeURIComponent(value).replace(/%(27|28|29|2A|2C|2F|3A|3B|3D|24|40)/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
-function queryString(q) {
-  const parts = [];
-  if (q.filter !== void 0) parts.push(`$filter=${encodeValue(q.filter)}`);
-  if (q.select !== void 0) parts.push(`$select=${encodeValue(q.select)}`);
-  if (q.orderby !== void 0) parts.push(`$orderby=${encodeValue(q.orderby)}`);
-  if (q.expand !== void 0) parts.push(`$expand=${encodeValue(q.expand)}`);
-  if (q.top !== void 0) parts.push(`$top=${q.top}`);
-  if (q.skip !== void 0) parts.push(`$skip=${q.skip}`);
-  return parts.join("&");
-}
-var withQuery = (path, query) => query ? `${path}?${query}` : path;
-function parseJson(response) {
-  try {
-    return JSON.parse(response.text);
-  } catch {
-    throw new SboError("SL_BAD_RESPONSE", `The Service Layer answered ${response.status} with a body that is not JSON. Check the URL and the Service Layer.`);
-  }
-}
-function readPage(ctx, response) {
-  const body = parseJson(response);
-  if (!Array.isArray(body?.value)) throw new SboError("SL_BAD_RESPONSE", 'The Service Layer answer has no "value" list. Is that an entity set?');
-  const link = body["@odata.nextLink"] ?? body["odata.nextLink"];
-  if (link === void 0) return { rows: body.value };
-  if (typeof link !== "string") throw new SboError("SL_BAD_RESPONSE", "The Service Layer sent a nextLink that is not text.");
-  const root = baseUrl(ctx.credentials.url, ctx.config.versionOData) + "/";
-  if (/^https?:/i.test(link)) {
-    if (!link.startsWith(root)) throw new SboError("SL_BAD_RESPONSE", "The Service Layer sent a nextLink to another address; it was not followed.");
-    return { rows: body.value, next: link.slice(root.length) };
-  }
-  return { rows: body.value, next: link.replace(/^\/+/, "") };
-}
-var maxPageSize = (size) => ({ Prefer: `odata.maxpagesize=${size}` });
-async function collectRows(ctx, cookie, first, maxRows) {
-  const rows = [];
-  let path = first;
-  let pages = 0;
-  let status = 200;
-  let truncated = false;
-  while (path !== void 0) {
-    const response = await request(ctx.transport, ctx.credentials, ctx.config.versionOData, "GET", path, cookie, maxPageSize(PAGE_SIZE));
-    status = response.status;
-    pages++;
-    const page = readPage(ctx, response);
-    rows.push(...page.rows);
-    path = page.next;
-    if (rows.length >= maxRows) {
-      truncated = rows.length > maxRows || path !== void 0;
-      rows.length = Math.min(rows.length, maxRows);
-      break;
-    }
-  }
-  return { rows, pages, truncated, status };
-}
-
-// src/use/session.ts
-import { mkdir as mkdir4, readFile as readFile2, rename, rm as rm4, writeFile as writeFile3 } from "node:fs/promises";
-var MAX_IDLE_MS = 30 * 6e4;
-async function load(ctx) {
-  try {
-    const s = JSON.parse(await readFile2(sessionPath(ctx.root, ctx.environment), "utf8"));
-    if (typeof s.cookie === "string" && !Number.isNaN(Date.parse(s.lastUsedAt))) return s;
-  } catch {
-  }
-  return null;
-}
-async function save(ctx, cookie) {
-  await mkdir4(envDir(ctx.root, ctx.environment), { recursive: true });
-  const session = { cookie, lastUsedAt: ctx.now().toISOString() };
-  const file = sessionPath(ctx.root, ctx.environment);
-  const temp = `${file}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
-  try {
-    await writeFile3(temp, JSON.stringify(session, null, 2) + "\n");
-    for (let attempt = 0; ; attempt++) {
-      try {
-        return await rename(temp, file);
-      } catch (e) {
-        if (attempt >= 5) throw e;
-        await new Promise((r) => setTimeout(r, 20 * (attempt + 1)));
-      }
-    }
-  } finally {
-    await rm4(temp, { force: true });
-  }
-}
-var isFresh = (ctx, s) => s !== null && ctx.now().getTime() - Date.parse(s.lastUsedAt) <= MAX_IDLE_MS;
-async function withSession(ctx, fn) {
-  const stored = await load(ctx);
-  if (isFresh(ctx, stored)) {
-    try {
-      const result2 = await fn(stored.cookie);
-      await save(ctx, stored.cookie);
-      return result2;
-    } catch (e) {
-      if (!(e instanceof SlError && e.status === 401)) throw e;
-    }
-  }
-  const cookie = await withLock(sessionLockPath(ctx.root, ctx.environment), async () => {
-    const current = await load(ctx);
-    if (isFresh(ctx, current) && current.cookie !== stored?.cookie) return current.cookie;
-    if (stored) await logout(ctx.credentials, ctx.version, stored.cookie, ctx.transport).catch(() => {
-    });
-    const { cookie: cookie2 } = await login(ctx.credentials, ctx.version, ctx.transport);
-    await save(ctx, cookie2);
-    return cookie2;
-  });
-  const result = await fn(cookie);
-  await save(ctx, cookie);
-  return result;
-}
+// src/use/entity-index.ts
+import { readFile as readFile3 } from "node:fs/promises";
 
 // src/use/metadata.ts
 var decode = (s) => s.replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
@@ -19335,6 +19200,7 @@ function entityTypeOf(xml, entitySet) {
   const type = m ? attributes(m[0]).EntityType : void 0;
   return type ? stripNamespace(type) : null;
 }
+var entitySetNames = (xml) => [...xml.matchAll(/<EntitySet\b[^>]*\bName="([^"]+)"/g)].map((m) => m[1]);
 function entityInfo(xml, entityType) {
   const text = block(xml, "EntityType", entityType);
   if (!text) return null;
@@ -19487,25 +19353,356 @@ function readChosenTables(markdown) {
   return line ? line.split(", ") : null;
 }
 
+// src/use/metadata-source.ts
+import { mkdir as mkdir4, rename, rm as rm4, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname2 } from "node:path";
+
+// src/common/lock.ts
+import { mkdir as mkdir3, rm as rm3, stat } from "node:fs/promises";
+import { dirname } from "node:path";
+var sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function withLock(path, work, { staleMs = 3e4, waitMs = 6e4 } = {}) {
+  await mkdir3(dirname(path), { recursive: true });
+  const deadline = Date.now() + waitMs;
+  let held = false;
+  while (!held) {
+    try {
+      await mkdir3(path);
+      held = true;
+    } catch (e) {
+      if (e.code !== "EEXIST") throw e;
+      const age = await stat(path).then((s) => Date.now() - s.mtimeMs, () => null);
+      if (age !== null && age > staleMs) await rm3(path, { recursive: true, force: true });
+      else if (Date.now() > deadline) break;
+      else await sleep(50 + Math.random() * 100);
+    }
+  }
+  try {
+    return await work();
+  } finally {
+    if (held) await rm3(path, { recursive: true, force: true });
+  }
+}
+
+// src/use/metadata-source.ts
+var CACHE_MAX_AGE_MS = 7 * 24 * 36e5;
+var withMetadataLock = (ctx, work) => withLock(metadataLockPath(ctx.root, ctx.environment), work);
+var downloaded = /* @__PURE__ */ new WeakMap();
+var downloadedMetadata = (ctx) => downloaded.get(ctx);
+async function getMetadata(ctx, cookie) {
+  const known = downloaded.get(ctx);
+  if (known !== void 0) return known;
+  const xml = (await request(ctx.transport, ctx.credentials, ctx.config.versionOData, "GET", "$metadata", cookie)).text;
+  downloaded.set(ctx, xml);
+  return xml;
+}
+async function writeAside(ctx, file, text) {
+  await mkdir4(dirname2(file), { recursive: true });
+  const temp = `${file}.${ctx.newId()}.tmp`;
+  try {
+    await writeFile3(temp, text);
+    await rename(temp, file);
+  } finally {
+    await rm4(temp, { force: true });
+  }
+}
+
+// src/use/rows.ts
+var PAGE_SIZE = 100;
+var DEFAULT_PAGE_TOP = 20;
+var DEFAULT_MAX_ROWS = 1e3;
+var MAX_KEYS_IN_OUTPUT = 50;
+function assertEntitySet(name) {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+    throw new SboError("INVALID_ENTITY_SET", `"${name}" is not an entity set name, for example BusinessPartners.`);
+  }
+}
+var encodeValue = (value) => encodeURIComponent(value).replace(/%(27|28|29|2A|2C|2F|3A|3B|3D|24|40)/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+function queryString(q) {
+  const parts = [];
+  if (q.filter !== void 0) parts.push(`$filter=${encodeValue(q.filter)}`);
+  if (q.select !== void 0) parts.push(`$select=${encodeValue(q.select)}`);
+  if (q.orderby !== void 0) parts.push(`$orderby=${encodeValue(q.orderby)}`);
+  if (q.expand !== void 0) parts.push(`$expand=${encodeValue(q.expand)}`);
+  if (q.top !== void 0) parts.push(`$top=${q.top}`);
+  if (q.skip !== void 0) parts.push(`$skip=${q.skip}`);
+  return parts.join("&");
+}
+var withQuery = (path, query) => query ? `${path}?${query}` : path;
+function parseJson(response) {
+  try {
+    return JSON.parse(response.text);
+  } catch {
+    throw new SboError("SL_BAD_RESPONSE", `The Service Layer answered ${response.status} with a body that is not JSON. Check the URL and the Service Layer.`);
+  }
+}
+function readPage(ctx, response) {
+  const body = parseJson(response);
+  if (!Array.isArray(body?.value)) throw new SboError("SL_BAD_RESPONSE", 'The Service Layer answer has no "value" list. Is that an entity set?');
+  const link = body["@odata.nextLink"] ?? body["odata.nextLink"];
+  if (link === void 0) return { rows: body.value };
+  if (typeof link !== "string") throw new SboError("SL_BAD_RESPONSE", "The Service Layer sent a nextLink that is not text.");
+  const root = baseUrl(ctx.credentials.url, ctx.config.versionOData) + "/";
+  if (/^https?:/i.test(link)) {
+    if (!link.startsWith(root)) throw new SboError("SL_BAD_RESPONSE", "The Service Layer sent a nextLink to another address; it was not followed.");
+    return { rows: body.value, next: link.slice(root.length) };
+  }
+  return { rows: body.value, next: link.replace(/^\/+/, "") };
+}
+var maxPageSize = (size) => ({ Prefer: `odata.maxpagesize=${size}` });
+async function collectRows(ctx, cookie, first, maxRows) {
+  const rows = [];
+  let path = first;
+  let pages = 0;
+  let status = 200;
+  let truncated = false;
+  while (path !== void 0) {
+    const response = await request(ctx.transport, ctx.credentials, ctx.config.versionOData, "GET", path, cookie, maxPageSize(PAGE_SIZE));
+    status = response.status;
+    pages++;
+    const page = readPage(ctx, response);
+    rows.push(...page.rows);
+    path = page.next;
+    if (rows.length >= maxRows) {
+      truncated = rows.length > maxRows || path !== void 0;
+      rows.length = Math.min(rows.length, maxRows);
+      break;
+    }
+  }
+  return { rows, pages, truncated, status };
+}
+
+// src/use/session.ts
+import { mkdir as mkdir5, readFile as readFile2, rename as rename2, rm as rm5, writeFile as writeFile4 } from "node:fs/promises";
+var MAX_IDLE_MS = 30 * 6e4;
+async function load(ctx) {
+  try {
+    const s = JSON.parse(await readFile2(sessionPath(ctx.root, ctx.environment), "utf8"));
+    if (typeof s.cookie === "string" && !Number.isNaN(Date.parse(s.lastUsedAt))) return s;
+  } catch {
+  }
+  return null;
+}
+async function save(ctx, cookie) {
+  await mkdir5(envDir(ctx.root, ctx.environment), { recursive: true });
+  const session = { cookie, lastUsedAt: ctx.now().toISOString() };
+  const file = sessionPath(ctx.root, ctx.environment);
+  const temp = `${file}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
+  try {
+    await writeFile4(temp, JSON.stringify(session, null, 2) + "\n");
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await rename2(temp, file);
+      } catch (e) {
+        if (attempt >= 5) throw e;
+        await new Promise((r) => setTimeout(r, 20 * (attempt + 1)));
+      }
+    }
+  } finally {
+    await rm5(temp, { force: true });
+  }
+}
+var isFresh = (ctx, s) => s !== null && ctx.now().getTime() - Date.parse(s.lastUsedAt) <= MAX_IDLE_MS;
+async function withSession(ctx, fn) {
+  const stored = await load(ctx);
+  if (isFresh(ctx, stored)) {
+    try {
+      const result2 = await fn(stored.cookie);
+      await save(ctx, stored.cookie);
+      return result2;
+    } catch (e) {
+      if (!(e instanceof SlError && e.status === 401)) throw e;
+    }
+  }
+  const cookie = await withLock(sessionLockPath(ctx.root, ctx.environment), async () => {
+    const current = await load(ctx);
+    if (isFresh(ctx, current) && current.cookie !== stored?.cookie) return current.cookie;
+    if (stored) await logout(ctx.credentials, ctx.version, stored.cookie, ctx.transport).catch(() => {
+    });
+    const { cookie: cookie2 } = await login(ctx.credentials, ctx.version, ctx.transport);
+    await save(ctx, cookie2);
+    return cookie2;
+  });
+  const result = await fn(cookie);
+  await save(ctx, cookie);
+  return result;
+}
+
+// src/use/entity-index.ts
+var byName = (a, b) => a.localeCompare(b, "en");
+var heading = (title, input, ...more) => [
+  `# ${title}`,
+  "",
+  `- ${CONTEXT_HEADER.fetched}: ${input.fetchedAt.toISOString()}`,
+  `- ${CONTEXT_HEADER.odata}: ${input.odataVersion} (B1 ${input.versionB1})`,
+  ...more
+].join("\n");
+function renderEntityIndex(input) {
+  const sets = entitySetNames(input.xml);
+  const objects = input.userObjects;
+  const objectCodes = new Set((objects ?? []).map((o) => o.Code));
+  const entries = [];
+  if (input.userTables) {
+    for (const t of input.userTables.filter((t2) => t2.TableType === "bott_NoObject")) {
+      entries.push({ name: `U_${t.TableName}`, line: `- U_${t.TableName} \u2014 user table${t.TableDescription ? ` \u2014 ${t.TableDescription}` : ""}` });
+    }
+  } else {
+    for (const name of sets.filter((s) => s.startsWith("U_"))) entries.push({ name, line: `- ${name} \u2014 user table` });
+  }
+  for (const o of objects ?? []) entries.push({ name: o.Code, line: `- ${o.Code} \u2014 user object${o.Name ? ` \u2014 ${o.Name}` : ""}` });
+  entries.sort((a, b) => byName(a.name, b.name));
+  const standardNames = sets.filter((s) => !s.startsWith("U_") && !objectCodes.has(s)).sort(byName);
+  const standard2 = [
+    heading(
+      "Standard SAP entities",
+      input,
+      `- ${standardNames.length} entity sets, by name as they go in the URL. No fields: the Contexto de objeto of an entity has them. User tables and user objects are in entities-user.md.`
+    ),
+    "",
+    standardNames.join(", "),
+    ""
+  ].join("\n");
+  const notes = [
+    ...input.userTables ? [] : ["- UserTablesMD could not be read: the tables come from $metadata, without description."],
+    ...objects ? [] : ["- UserObjectsMD could not be read: user objects are not listed here (they may appear among the standard entities)."]
+  ];
+  const user = [
+    heading("User-defined entities", input, "- One line per entity set, as it goes in the URL: a user table (`U_<TABLE>`) or a user object (its code).", ...notes),
+    "",
+    ...entries.length > 0 ? entries.map((e) => e.line) : ["None."],
+    ""
+  ].join("\n");
+  return { standard: standard2, user };
+}
+var MAX_ROWS = 5e3;
+async function isFresh2(ctx) {
+  const [standard2, user] = await Promise.all([readFile3(standardIndexPath(ctx.root, ctx.environment), "utf8").catch(() => null), readFile3(userIndexPath(ctx.root, ctx.environment), "utf8").catch(() => null)]);
+  const header = standard2 === null || user === null ? null : readHeader(standard2);
+  if (!header || header.odataVersion !== ctx.config.versionOData) return false;
+  const age = ctx.now().getTime() - header.fetchedAt.getTime();
+  return age >= 0 && age <= CACHE_MAX_AGE_MS;
+}
+async function readOptional(ctx, cookie, path) {
+  try {
+    return (await collectRows(ctx, cookie, withQuery(path, queryString({})), MAX_ROWS)).rows;
+  } catch (e) {
+    if (e instanceof SlError && e.status !== 401) return null;
+    throw e;
+  }
+}
+async function readEntityIndex(ctx, cookie) {
+  const xml = await getMetadata(ctx, cookie);
+  const userTables = await readOptional(ctx, cookie, "UserTablesMD?$select=TableName,TableDescription,TableType");
+  const userObjects = await readOptional(ctx, cookie, "UserObjectsMD?$select=Code,Name,TableName");
+  return renderEntityIndex({ xml, odataVersion: ctx.config.versionOData, versionB1: ctx.config.versionB1, fetchedAt: ctx.now(), userTables, userObjects });
+}
+async function writeEntityIndex(ctx, rendered) {
+  await writeAside(ctx, userIndexPath(ctx.root, ctx.environment), rendered.user);
+  await writeAside(ctx, standardIndexPath(ctx.root, ctx.environment), rendered.standard);
+}
+async function ensureEntityIndex(ctx, { force = false } = {}) {
+  const files = { standard: standardIndexPath(ctx.root, ctx.environment), user: userIndexPath(ctx.root, ctx.environment) };
+  if (!force && await isFresh2(ctx)) return { ...files, regenerated: false };
+  return withMetadataLock(ctx, async () => {
+    if (!force && await isFresh2(ctx)) return { ...files, regenerated: false };
+    await writeEntityIndex(ctx, await withSession(ctx.session, (cookie) => readEntityIndex(ctx, cookie)));
+    return { ...files, regenerated: true };
+  });
+}
+async function renewIndexQuietly(ctx) {
+  try {
+    await ensureEntityIndex(ctx);
+    return null;
+  } catch (e) {
+    return e.message;
+  }
+}
+async function countEntities(result) {
+  const [standard2, user] = await Promise.all([readFile3(result.standard, "utf8"), readFile3(result.user, "utf8")]);
+  return {
+    estandar: Number(/^- (\d+) entity sets/m.exec(standard2)?.[1] ?? 0),
+    usuario: (user.match(/^- .+ — user (?:table|object)/gm) ?? []).length
+  };
+}
+function missingEntityMessage(ctx, names, answer) {
+  const files = `${standardIndexPath(ctx.root, ctx.environment)} (standard SAP entities) and ${userIndexPath(ctx.root, ctx.environment)} (user tables and objects)`;
+  return `${names.join(", ")} ${names.length > 1 ? "are not entity sets" : "is not an entity set"} of this Service Layer: it is not in $metadata, downloaded again just now. Read the \xCDndice de entidades to find the right name: ${files}. If it was just created, a Service Layer node may not list it yet: ask the developer to run "entities --refresh".` + (answer ? ` The Service Layer answered: ${answer}` : "");
+}
+var NOT_AN_ENTITY = /Unrecognized resource path|Invalid entityset|Service Not Found/i;
+async function explainMissingEntity(ctx, out) {
+  if (out.ok || out.status !== 400 || !out.error || !NOT_AN_ENTITY.test(out.error.message) || ctx.entitySets.size === 0) return out;
+  try {
+    await ensureEntityIndex(ctx, { force: true });
+  } catch {
+    return out;
+  }
+  const listed = new Set(entitySetNames(downloadedMetadata(ctx) ?? ""));
+  const absent = [...ctx.entitySets].filter((e) => !listed.has(e));
+  if (absent.length === 0) return out;
+  return { ...out, error: { code: "ENTITY_NOT_FOUND", message: missingEntityMessage(ctx, absent, out.error.message) } };
+}
+
+// src/use/context.ts
+async function openUse(options, { sweep = true, index = true } = {}) {
+  const config = await readConfig(options.root);
+  const environment = await resolveEnvironment(options.root, options.environment);
+  const credentials = await readCredentials(options.root, environment);
+  const transport = options.transport ?? defaultTransport;
+  const now = options.now ?? (() => /* @__PURE__ */ new Date());
+  const newId = options.newId ?? (() => randomBytes(3).toString("hex"));
+  if (sweep) await sweepOldDumps(options.root, environment, now()).catch(() => {
+  });
+  const ctx = {
+    root: options.root,
+    config,
+    environment,
+    credentials,
+    transport,
+    now,
+    newId,
+    entitySets: /* @__PURE__ */ new Set(),
+    session: { root: options.root, environment, credentials, version: config.versionOData, transport, now }
+  };
+  if (options.run) options.run.ctx = ctx;
+  if (index) {
+    const error = await renewIndexQuietly(ctx);
+    if (error !== null && options.run) options.run.notes.indiceError = error;
+  }
+  return ctx;
+}
+
+// src/use/output.ts
+var success = (status, resumen) => ({ ok: true, status, resumen });
+function failure(e) {
+  if (e instanceof SlError) return { ok: false, status: e.status, resumen: null, error: { code: e.code, message: e.message } };
+  if (e instanceof SboError) return { ok: false, status: null, resumen: null, error: { code: e.code, message: e.message } };
+  return { ok: false, status: null, resumen: null, error: { code: "INTERNAL_ERROR", message: `Unexpected error: ${e.message}. Report it if it persists.` } };
+}
+
+// src/use/clean.ts
+async function cleanDump(options) {
+  try {
+    const ctx = await openUse(options, { sweep: false });
+    const removed = await removeDump(ctx.root, ctx.environment, options.target);
+    const old = await sweepOldDumps(ctx.root, ctx.environment, ctx.now());
+    return success(200, { entorno: ctx.environment, eliminado: removed, caducados: old.length });
+  } catch (e) {
+    return failure(e);
+  }
+}
+
 // src/use/object-context.ts
-var CONTEXT_MAX_AGE_MS = 7 * 24 * 36e5;
+import { readFile as readFile4 } from "node:fs/promises";
+var CONTEXT_MAX_AGE_MS = CACHE_MAX_AGE_MS;
 var MAX_USER_FIELDS = 5e3;
-async function isFresh2(ctx, file) {
+async function isFresh3(ctx, file) {
   let text;
   try {
-    text = await readFile3(file, "utf8");
+    text = await readFile4(file, "utf8");
   } catch {
     return false;
   }
   const header = readHeader(text);
-  if (!header || header.odataVersion !== ctx.config.versionOData) return false;
-  const age = ctx.now().getTime() - header.fetchedAt.getTime();
-  return age >= 0 && age <= CONTEXT_MAX_AGE_MS;
-}
-var missingPath = (ctx, entitySet) => contextPath(ctx.root, ctx.environment, entitySet).replace(/\.md$/, ".missing");
-async function isKnownMissing(ctx, entitySet) {
-  const text = await readFile3(missingPath(ctx, entitySet), "utf8").catch(() => null);
-  const header = text === null ? null : readHeader(text);
   if (!header || header.odataVersion !== ctx.config.versionOData) return false;
   const age = ctx.now().getTime() - header.fetchedAt.getTime();
   return age >= 0 && age <= CONTEXT_MAX_AGE_MS;
@@ -19536,13 +19733,11 @@ async function ensureContext(ctx, entitySet, options = {}) {
   const mayReuse = !options.force && options.tables === void 0;
   const reuse = async () => {
     if (!mayReuse) return void 0;
-    if (await isFresh2(ctx, file)) return { path: file, regenerated: false };
-    if (await isKnownMissing(ctx, entitySet)) return null;
-    return void 0;
+    return await isFresh3(ctx, file) ? { path: file, regenerated: false } : void 0;
   };
   const early = await reuse();
   if (early !== void 0) return early;
-  return withLock(`${file}.lock`, async () => {
+  return withMetadataLock(ctx, async () => {
     const again = await reuse();
     return again !== void 0 ? again : generate(ctx, entitySet, file, options);
   });
@@ -19550,7 +19745,7 @@ async function ensureContext(ctx, entitySet, options = {}) {
 async function generate(ctx, entitySet, file, options) {
   const chosen = options.tables === void 0 ? await savedTables(file) : options.tables.length > 0 ? options.tables : null;
   const markdown = await withSession(ctx.session, async (cookie) => {
-    const xml = (await request(ctx.transport, ctx.credentials, ctx.config.versionOData, "GET", "$metadata", cookie)).text;
+    const xml = await getMetadata(ctx, cookie);
     if (entityTypeOf(xml, entitySet) === null) return null;
     const tables = chosen ? { main: chosen, collections: {} } : await resolveTables(ctx, cookie, entitySet);
     const fetched = tables ? await fetchUserFields(ctx, cookie, tables) : null;
@@ -19566,40 +19761,21 @@ async function generate(ctx, entitySet, file, options) {
       chosenTables: chosen ?? void 0
     });
   });
-  await mkdir5(dirname2(file), { recursive: true });
-  if (markdown === null) {
-    await writeAside(ctx, missingPath(ctx, entitySet), `# ${entitySet}
-
-${missingText(ctx)}`);
-    return null;
-  }
+  if (markdown === null) return null;
   await writeAside(ctx, file, markdown);
-  await rm5(missingPath(ctx, entitySet), { force: true });
   return { path: file, regenerated: true };
 }
-var missingText = (ctx) => `- ${CONTEXT_HEADER.fetched}: ${ctx.now().toISOString()}
-- ${CONTEXT_HEADER.odata}: ${ctx.config.versionOData}
-- $metadata did not list this entity set.
-`;
-async function writeAside(ctx, file, text) {
-  const temp = `${file}.${ctx.newId()}.tmp`;
-  try {
-    await writeFile4(temp, text);
-    await rename2(temp, file);
-  } finally {
-    await rm5(temp, { force: true });
-  }
-}
 async function savedTables(file) {
-  const text = await readFile3(file, "utf8").catch(() => null);
+  const text = await readFile4(file, "utf8").catch(() => null);
   return text === null ? null : readChosenTables(text);
 }
 async function contextForOperation(ctx, entitySet, force) {
+  ctx.entitySets.add(entitySet);
   try {
     return contextSummary(await ensureContext(ctx, entitySet, { force }));
   } catch (e) {
     const file = contextPath(ctx.root, ctx.environment, entitySet);
-    const existing = await readFile3(file, "utf8").then(() => ({ contexto: file }), () => ({}));
+    const existing = await readFile4(file, "utf8").then(() => ({ contexto: file }), () => ({}));
     return { ...existing, contextoError: e.message };
   }
 }
@@ -19609,8 +19785,12 @@ async function contextCommand(options) {
     assertEntitySet(options.entitySet);
     const ctx = await openUse(options);
     const result = await ensureContext(ctx, options.entitySet, { force: options.refresh, tables: options.tables });
-    if (!result) throw new SboError("ENTITY_NOT_FOUND", `${options.entitySet} is not an entity set of this Service Layer ($metadata does not list it). Check the name. If it was just created, run "context ${options.entitySet} --refresh": this answer is remembered for a week unless you refresh.`);
-    const text = await readFile3(result.path, "utf8");
+    if (!result) {
+      await ensureEntityIndex(ctx, { force: true }).catch(() => {
+      });
+      throw new SboError("ENTITY_NOT_FOUND", missingEntityMessage(ctx, [options.entitySet]));
+    }
+    const text = await readFile4(result.path, "utf8");
     const header = readHeader(text);
     return success(200, {
       entorno: ctx.environment,
@@ -19658,6 +19838,27 @@ async function getByKey(options) {
       keys: [parsed.plain]
     });
     return success(response.status, { entorno: ctx.environment, entitySet: options.entitySet, filas: 1, ruta: dir, claves: keys, ...context });
+  } catch (e) {
+    return failure(e);
+  }
+}
+
+// src/use/entities.ts
+import { readFile as readFile5 } from "node:fs/promises";
+async function entitiesCommand(options) {
+  try {
+    const ctx = await openUse(options, { index: false });
+    const result = await ensureEntityIndex(ctx, { force: options.refresh });
+    const header = readHeader(await readFile5(result.standard, "utf8"));
+    return success(200, {
+      entorno: ctx.environment,
+      regenerado: result.regenerated,
+      estandar: result.standard,
+      usuario: result.user,
+      fecha: header?.fetchedAt.toISOString() ?? null,
+      versionOData: ctx.config.versionOData,
+      entidades: await countEntities(result)
+    });
   } catch (e) {
     return failure(e);
   }
@@ -19745,75 +19946,631 @@ async function count(options) {
   }
 }
 
-// src/use/write.ts
-import { readFile as readFile4 } from "node:fs/promises";
-var PROD_FLAG = "--allow-prod";
-async function readBody(options) {
-  if (options.method === "DELETE") {
-    if (options.body !== void 0 || options.bodyFile !== void 0) throw new SboError("INVALID_ARGUMENTS", "DELETE takes no body. Remove --body / --body-file.");
-    return void 0;
+// src/use/request.ts
+import { readFile as readFile6, realpath, stat as stat2, writeFile as writeFile5 } from "node:fs/promises";
+import { basename, join as join4, resolve as resolve2 } from "node:path";
+
+// src/use/headers.ts
+var RESERVED = {
+  cookie: "the tool logs in and sends the session cookie itself (and never shows it)",
+  host: "it is set from the URL of the environment, so a request cannot be sent to another host",
+  "content-length": "it is computed from the body that is sent"
+};
+var TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+function assertHeader(name, value, where = "--header") {
+  if (!TOKEN.test(name)) throw new SboError("HEADER_INVALID", `${where}: "${name}" is not a valid header name.`);
+  if (/[\r\n\0]/.test(value)) throw new SboError("HEADER_INVALID", `${where}: the value of ${name} has a line break or a null character.`);
+  const why = RESERVED[name.toLowerCase()];
+  if (why) throw new SboError("HEADER_RESERVED", `${where}: ${name} cannot be set, ${why}. Remove it; nothing was sent.`);
+}
+function parseHeaderFlags(flags) {
+  const headers = {};
+  const seen = /* @__PURE__ */ new Set();
+  for (const flag of flags ?? []) {
+    const colon = flag.indexOf(":");
+    if (colon < 1) throw new SboError("HEADER_INVALID", `--header must be "Name: value", got "${flag}".`);
+    const name = flag.slice(0, colon).trim();
+    const value = flag.slice(colon + 1).trim();
+    assertHeader(name, value);
+    if (seen.has(name.toLowerCase())) throw new SboError("HEADER_INVALID", `--header: ${name} is given twice. Give it once (several values go in one value, separated by commas).`);
+    seen.add(name.toLowerCase());
+    headers[name] = value;
   }
-  if (options.body === void 0 === (options.bodyFile === void 0)) {
-    throw new SboError("INVALID_ARGUMENTS", `${options.method} needs the body: pass --body '<json>' or --body-file <path>, one of them.`);
+  return headers;
+}
+function checkHeaderObject(headers, where) {
+  if (headers === void 0) return {};
+  if (headers === null || typeof headers !== "object" || Array.isArray(headers)) throw new SboError("BATCH_INVALID", `${where}: "headers" must be an object of name to text.`);
+  const result = {};
+  const seen = /* @__PURE__ */ new Set();
+  for (const [name, value] of Object.entries(headers)) {
+    if (typeof value !== "string") throw new SboError("BATCH_INVALID", `${where}: the header ${name} must be text.`);
+    assertHeader(name, value, `${where} header`);
+    if (seen.has(name.toLowerCase())) throw new SboError("HEADER_INVALID", `${where}: ${name} is given twice.`);
+    seen.add(name.toLowerCase());
+    result[name] = value;
+  }
+  return result;
+}
+var hasHeader = (headers, name) => Object.keys(headers).some((h) => h.toLowerCase() === name.toLowerCase());
+
+// src/use/multipart.ts
+import { randomUUID } from "node:crypto";
+
+// src/use/path.ts
+var METHODS = ["GET", "POST", "PATCH", "PUT", "DELETE"];
+function parseMethod(value, where = "The method") {
+  const method = value.toUpperCase();
+  if (!METHODS.includes(method)) {
+    throw new SboError("INVALID_METHOD", `${where} must be one of ${METHODS.join(", ")}, got "${value}".`);
+  }
+  return method;
+}
+var URL_SAFE = /[A-Za-z0-9\-._~!$&'()*+,;=:@/?]/;
+function encodeUnsafe(text) {
+  let out = "";
+  for (let i = 0; i < text.length; ) {
+    const point = text.codePointAt(i);
+    const char = String.fromCodePoint(point);
+    i += char.length;
+    if (char === "%" && /^[0-9A-Fa-f]{2}/.test(text.slice(i))) out += "%";
+    else if (URL_SAFE.test(char)) out += char;
+    else out += [...Buffer.from(char, "utf8")].map((b) => "%" + b.toString(16).toUpperCase().padStart(2, "0")).join("");
+  }
+  return out;
+}
+function normalizePath(path, where = "The path") {
+  if (path.trim() === "") throw new SboError("INVALID_PATH", `${where} is empty. Give the path after the service root, for example Orders(5)/Cancel.`);
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(path)) throw new SboError("INVALID_PATH", `${where} must not be a full URL: give only what comes after /b1s/<version>/. The host and the version come from the environment.`);
+  const stripped = path.replace(/^\/+/, "");
+  if (/^b1s\//i.test(stripped)) throw new SboError("INVALID_PATH", `${where} must not start with /b1s/<version>: the tool adds it from the saved OData version. Give the rest, for example Orders(5).`);
+  const [resource] = stripped.split("?", 1);
+  if (resource.split("/").some((s) => s === ".." || s === ".")) throw new SboError("INVALID_PATH", `${where} must not contain "." or ".." segments.`);
+  if (/^(Login|Logout)(\?|\/|$)/i.test(resource)) {
+    throw new SboError("PATH_RESERVED", `${where} is ${resource.split("/")[0]}: the tool logs in and out by itself and keeps the session; it cannot be driven through request.`);
+  }
+  return encodeUnsafe(stripped);
+}
+function entitySetOf(path) {
+  const first = path.split("?", 1)[0].split("/", 1)[0];
+  const name = /^([A-Za-z_][A-Za-z0-9_]*)(\(.*)?$/s.exec(first)?.[1];
+  return name ?? null;
+}
+function folderName(path) {
+  const first = path.split("?", 1)[0].split("/", 1)[0].replace(/\(.*$/s, "").replace(/^\$/, "");
+  return /^[A-Za-z0-9_]+$/.test(first) && first !== "" ? first : "response";
+}
+
+// src/use/multipart.ts
+var CONTENT_ID = /^[A-Za-z0-9_.-]{1,40}$/;
+function parseSubRequest(raw, where) {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw new SboError("BATCH_INVALID", `${where} must be an object with "method" and "path".`);
+  const r = raw;
+  const known = ["method", "path", "headers", "body", "contentId"];
+  const extra = Object.keys(r).filter((k) => !known.includes(k));
+  if (extra.length > 0) throw new SboError("BATCH_INVALID", `${where} has unknown keys: ${extra.join(", ")}. Allowed: ${known.join(", ")}.`);
+  if (typeof r.method !== "string") throw new SboError("BATCH_INVALID", `${where}: "method" must be text (GET, POST, PATCH, PUT or DELETE).`);
+  if (typeof r.path !== "string") throw new SboError("BATCH_INVALID", `${where}: "path" must be text, for example "Orders(5)".`);
+  const method = parseMethod(r.method, `${where}: "method"`);
+  if (/^\$batch/i.test(r.path.replace(/^\/+/, ""))) throw new SboError("BATCH_INVALID", `${where}: a batch cannot contain another $batch.`);
+  const path = normalizePath(r.path, `${where}: "path"`);
+  const headers = checkHeaderObject(r.headers, where);
+  let contentId;
+  if (r.contentId !== void 0) {
+    if (typeof r.contentId !== "string" && typeof r.contentId !== "number" || !CONTENT_ID.test(String(r.contentId))) {
+      throw new SboError("BATCH_INVALID", `${where}: "contentId" must be letters, digits, "_", "." or "-" (up to 40), for example "1".`);
+    }
+    contentId = String(r.contentId);
+  }
+  let body;
+  if (r.body !== void 0) {
+    if (method === "GET") throw new SboError("BATCH_INVALID", `${where}: a GET has no body.`);
+    body = typeof r.body === "string" ? r.body : JSON.stringify(r.body);
+  }
+  return { method, path, headers, body, contentId };
+}
+function parseBatchSpec(value) {
+  const spec = value;
+  if (spec === null || typeof spec !== "object" || !Array.isArray(spec.requests) || spec.requests.length === 0) {
+    throw new SboError("BATCH_INVALID", 'A batch file is {"requests": [ ... ]} with at least one entry; each entry is a request {method, path, headers?, body?, contentId?} or {"changeset": [requests]}.');
+  }
+  const extraTop = Object.keys(spec).filter((k) => k !== "requests");
+  if (extraTop.length > 0) throw new SboError("BATCH_INVALID", `The batch file has unknown keys: ${extraTop.join(", ")}. Only "requests" is allowed.`);
+  const items = spec.requests.map((entry, i) => {
+    const where = `requests[${i}]`;
+    if (entry !== null && typeof entry === "object" && "changeset" in entry) {
+      const set = entry.changeset;
+      if (Object.keys(entry).length !== 1) throw new SboError("BATCH_INVALID", `${where}: a changeset entry has only the key "changeset".`);
+      if (!Array.isArray(set) || set.length === 0) throw new SboError("BATCH_INVALID", `${where}.changeset must be a list with at least one request.`);
+      const requests = set.map((r, j) => parseSubRequest(r, `${where}.changeset[${j}]`));
+      requests.forEach((r, j) => {
+        if (r.method === "GET") throw new SboError("BATCH_INVALID", `${where}.changeset[${j}]: a changeset cannot contain a GET; put the read outside it.`);
+      });
+      return { kind: "changeset", requests };
+    }
+    return { kind: "request", request: parseSubRequest(entry, where) };
+  });
+  assignContentIds(items);
+  return { items };
+}
+function assignContentIds(items) {
+  const used = /* @__PURE__ */ new Set();
+  for (const item of items) for (const r of item.kind === "request" ? [item.request] : item.requests) {
+    if (r.contentId === void 0) continue;
+    if (used.has(r.contentId)) throw new SboError("BATCH_INVALID", `contentId "${r.contentId}" is used twice; each must be unique in the batch.`);
+    used.add(r.contentId);
+  }
+  let next = 1;
+  for (const item of items) {
+    if (item.kind !== "changeset") continue;
+    const earlier = /* @__PURE__ */ new Set();
+    for (const r of item.requests) {
+      if (r.contentId === void 0) {
+        while (used.has(String(next))) next++;
+        r.contentId = String(next);
+        used.add(r.contentId);
+      }
+      const ref = /^\$([A-Za-z0-9_.-]+)(?:[/(?]|$)/.exec(r.path)?.[1];
+      if (ref !== void 0 && !earlier.has(ref)) {
+        throw new SboError("BATCH_INVALID", `The path "${r.path}" refers to $${ref}, which is not an earlier request of the same changeset. A $<contentId> reference works only inside one changeset, after the request it names.`);
+      }
+      earlier.add(r.contentId);
+    }
+  }
+  for (const item of items) {
+    if (item.kind === "request" && item.request.path.startsWith("$")) {
+      throw new SboError("BATCH_INVALID", `The path "${item.request.path}" is a $<contentId> reference, which only works inside a changeset.`);
+    }
+  }
+}
+var batchRequests = (batch) => batch.items.flatMap((i) => i.kind === "request" ? [i.request] : i.requests);
+function subRequestHeaders(r) {
+  return r.body !== void 0 && !hasHeader(r.headers, "Content-Type") ? { ...r.headers, "Content-Type": "application/json" } : r.headers;
+}
+var subRequestTarget = (r, version) => `/b1s/${version}/${r.path}`;
+var CRLF = "\r\n";
+function renderSubRequest(r, version) {
+  const headers = Object.entries(subRequestHeaders(r)).map(([k, v]) => `${k}: ${v}`);
+  return [`${r.method} ${subRequestTarget(r, version)}`, ...headers].join(CRLF) + CRLF + CRLF + (r.body ?? "");
+}
+function part(headers, content) {
+  return headers.join(CRLF) + CRLF + CRLF + content;
+}
+function buildBatchBody(batch, version, ids = randomUUID) {
+  const boundary = `batch_${ids()}`;
+  const parts = [];
+  for (const item of batch.items) {
+    if (item.kind === "request") {
+      const r = item.request;
+      const head = ["Content-Type: application/http", "Content-Transfer-Encoding: binary", ...r.contentId !== void 0 ? [`Content-ID: ${r.contentId}`] : []];
+      parts.push(part(head, renderSubRequest(r, version)));
+    } else {
+      const inner = `changeset_${ids()}`;
+      const inside = item.requests.map((r) => part(["Content-Type: application/http", "Content-Transfer-Encoding: binary", `Content-ID: ${r.contentId}`], renderSubRequest(r, version)));
+      const changeset = inside.map((p) => `--${inner}${CRLF}${p}${CRLF}`).join("") + `--${inner}--`;
+      parts.push(part([`Content-Type: multipart/mixed;boundary=${inner}`], changeset));
+    }
+  }
+  const body = parts.map((p) => `--${boundary}${CRLF}${p}${CRLF}`).join("") + `--${boundary}--${CRLF}`;
+  return { body, contentType: `multipart/mixed;boundary=${boundary}`, boundary };
+}
+var escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+var boundaryOf = (contentType) => /boundary="?([^";,\s]+)"?/i.exec(contentType ?? "")?.[1];
+function splitParts(text, boundary) {
+  const delimiter = new RegExp(`(?:^|\\r?\\n)--${escapeRegExp(boundary)}(--)?[ \\t]*(?:\\r?\\n|$)`, "g");
+  const parts = [];
+  let last = null;
+  for (let m = delimiter.exec(text); m !== null; m = delimiter.exec(text)) {
+    if (last !== null) parts.push(text.slice(last, m.index));
+    if (m[1] === "--") return parts;
+    last = m.index + m[0].length;
+  }
+  throw new SboError("SL_BAD_RESPONSE", "The batch answer is not a complete multipart message (no closing boundary).");
+}
+function splitHead(text) {
+  const m = /\r?\n\r?\n/.exec(text);
+  if (text.startsWith("\r\n") || text.startsWith("\n")) return { head: "", rest: text.replace(/^\r?\n/, "") };
+  return m ? { head: text.slice(0, m.index), rest: text.slice(m.index + m[0].length) } : { head: text, rest: "" };
+}
+function parseHeaders(head) {
+  const headers = {};
+  for (const line of head.split(/\r?\n/)) {
+    const colon = line.indexOf(":");
+    if (colon > 0) headers[line.slice(0, colon).trim().toLowerCase()] = line.slice(colon + 1).trim();
+  }
+  return headers;
+}
+function parseResponsePart(partHeaders, content, binary) {
+  const message = content.replace(/^(?:\r?\n)+/, "");
+  const { head, rest } = splitHead(message);
+  const [statusLine, ...headerLines] = head.split(/\r?\n/);
+  const m = /^HTTP\/\d(?:\.\d)?\s+(\d{3})\s*(.*)$/.exec(statusLine ?? "");
+  if (!m) throw new SboError("SL_BAD_RESPONSE", `A part of the batch answer is not an HTTP response: "${(statusLine ?? "").slice(0, 80)}".`);
+  const headers = parseHeaders(headerLines.join("\n"));
+  const bytes = binary ? Buffer.from(rest, "latin1") : void 0;
+  return { contentId: partHeaders["content-id"] ?? headers["content-id"], status: Number(m[1]), statusText: m[2].trim(), headers, body: bytes ? bytes.toString("utf8") : rest, bytes };
+}
+function parseBatchResponse(text, contentType, binary = false) {
+  const boundary = boundaryOf(contentType);
+  if (!/multipart\/mixed/i.test(contentType ?? "") || !boundary) {
+    throw new SboError("SL_BAD_RESPONSE", `The batch answer is not multipart/mixed (Content-Type: ${contentType ?? "none"}).`);
+  }
+  return splitParts(text, boundary).map((raw) => {
+    const { head, rest } = splitHead(raw);
+    const headers = parseHeaders(head);
+    const inner = headers["content-type"];
+    if (inner && /multipart\/mixed/i.test(inner)) {
+      const innerBoundary = boundaryOf(inner);
+      if (!innerBoundary) throw new SboError("SL_BAD_RESPONSE", "A changeset of the batch answer has no boundary.");
+      const responses = splitParts(rest, innerBoundary).map((p) => {
+        const h = splitHead(p);
+        return parseResponsePart(parseHeaders(h.head), h.rest, binary);
+      });
+      return { kind: "changeset", responses };
+    }
+    return { kind: "response", response: parseResponsePart(headers, rest, binary) };
+  });
+}
+var MIME = {
+  txt: "text/plain",
+  csv: "text/csv",
+  json: "application/json",
+  xml: "application/xml",
+  html: "text/html",
+  pdf: "application/pdf",
+  zip: "application/zip",
+  doc: "application/msword",
+  xls: "application/vnd.ms-excel",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  bmp: "image/bmp",
+  svg: "image/svg+xml"
+};
+var mimeFor = (fileName) => MIME[/\.([A-Za-z0-9]+)$/.exec(fileName)?.[1]?.toLowerCase() ?? ""] ?? "application/octet-stream";
+var extensionFor = (contentType) => {
+  const type = (contentType ?? "").split(";", 1)[0].trim().toLowerCase();
+  if (type === "image/jpeg") return "jpg";
+  if (type === "text/plain") return "txt";
+  if (type === "application/octet-stream" || type === "") return "bin";
+  return Object.entries(MIME).find(([, v]) => v === type)?.[0] ?? "bin";
+};
+var quoted = (name) => name.replace(/[\r\n]/g, " ").replace(/"/g, "%22");
+function buildFormData(files, boundary = `----sbo${randomUUID().replace(/-/g, "")}`) {
+  const chunks = [];
+  for (const f of files) {
+    chunks.push(Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="files"; filename="${quoted(f.name)}"${CRLF}Content-Type: ${f.type}${CRLF}${CRLF}`, "utf8"), Buffer.from(f.bytes), Buffer.from(CRLF));
+  }
+  chunks.push(Buffer.from(`--${boundary}--${CRLF}`));
+  return { body: Buffer.concat(chunks), contentType: `multipart/form-data; boundary=${boundary}` };
+}
+
+// src/use/request.ts
+var MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+var PROD_FLAG = "--allow-prod";
+var isBatchPath = (path) => /^\$batch(\?|$)/i.test(path);
+async function readTextFile(path, what) {
+  let bytes;
+  try {
+    bytes = await readFile6(path);
+  } catch {
+    throw new SboError("INVALID_BODY", `Could not read the ${what} ${path}. Check the path.`);
+  }
+  return (bytes[0] === 255 && bytes[1] === 254 ? bytes.toString("utf16le") : bytes.toString("utf8")).replace(/^﻿/, "");
+}
+async function assertNotSecret(root, file) {
+  const real = await realpath(file).catch(() => resolve2(file));
+  for (const env of ENVIRONMENTS) {
+    for (const secret of [credentialsPath(root, env), sessionPath(root, env)]) {
+      if (real === await realpath(secret).catch(() => resolve2(secret))) {
+        throw new SboError("FILE_FORBIDDEN", `${basename(file)} holds the credentials or the session of the Service Layer; the tool never sends it. Nothing was sent.`);
+      }
+    }
+  }
+}
+async function loadFile(root, path) {
+  const file = resolve2(root, path);
+  const info = await stat2(file).catch(() => null);
+  if (!info?.isFile()) throw new SboError("FILE_NOT_FOUND", `"${path}" is not a file. Check the path (it is relative to the folder where the command runs).`);
+  await assertNotSecret(root, file);
+  if (info.size >= MAX_UPLOAD_BYTES) {
+    throw new SboError("FILE_TOO_LARGE", `${basename(file)} is ${info.size} bytes; the Service Layer refuses an attachment of ${MAX_UPLOAD_BYTES / 1024 / 1024} MB or more (413). Nothing was sent.`);
+  }
+  const bytes = await readFile6(file);
+  const name = basename(file);
+  const type = mimeFor(name);
+  return { name, type, bytes, shown: { nombre: name, bytes: bytes.byteLength, tipo: type } };
+}
+async function readPayload(options, method, path, headers) {
+  const given = [options.body !== void 0, options.bodyFile !== void 0, (options.files?.length ?? 0) > 0, options.streamFile !== void 0].filter(Boolean).length;
+  if (given === 0) {
+    if (isBatchPath(path)) throw new SboError("INVALID_ARGUMENTS", "A $batch needs its description: --body-file <batch.json> (or --body '<json>').");
+    return { kind: "none" };
+  }
+  if (given > 1 || options.body !== void 0 && options.bodyFile !== void 0) {
+    throw new SboError("INVALID_ARGUMENTS", "Give one kind of body: --body, --body-file, --file (repeatable) or --stream-file.");
+  }
+  if (method === "GET") throw new SboError("INVALID_ARGUMENTS", "A GET takes no body. Remove --body / --body-file / --file / --stream-file.");
+  const customType = Object.entries(headers).find(([k]) => k.toLowerCase() === "content-type")?.[1];
+  if (options.files?.length || options.streamFile !== void 0) {
+    if (isBatchPath(path)) throw new SboError("INVALID_ARGUMENTS", "A $batch takes its description (--body-file), not files.");
+    if (options.files?.length) {
+      if (customType !== void 0) throw new SboError("HEADER_CONFLICT", "With --file the tool sets Content-Type (multipart/form-data with its boundary). Remove that --header.");
+      return { kind: "form", files: await Promise.all(options.files.map((f) => loadFile(options.root, f))) };
+    }
+    return { kind: "stream", file: await loadFile(options.root, options.streamFile) };
   }
   let text = options.body;
   if (text === void 0) {
-    let bytes;
-    try {
-      bytes = await readFile4(options.bodyFile);
-    } catch {
-      throw new SboError("INVALID_BODY", `Could not read the body file ${options.bodyFile}. Check the path.`);
-    }
-    text = bytes[0] === 255 && bytes[1] === 254 ? bytes.toString("utf16le") : bytes.toString("utf8");
+    const file = resolve2(options.root, options.bodyFile);
+    await assertNotSecret(options.root, file);
+    text = await readTextFile(file, "body file");
   }
-  text = text.replace(/^﻿/, "");
+  const json = customType === void 0 || /json/i.test(customType);
+  if (isBatchPath(path)) {
+    if (customType !== void 0) throw new SboError("HEADER_CONFLICT", "For a $batch the tool sets Content-Type (multipart/mixed with its boundary). Remove that --header.");
+    let value;
+    try {
+      value = JSON.parse(text);
+    } catch {
+      throw new SboError("INVALID_BODY", "The batch file is not valid JSON. Fix it; nothing was sent.");
+    }
+    return { kind: "batch", batch: parseBatchSpec(value) };
+  }
+  if (!json) return { kind: "json", text, value: text, contentType: customType };
   try {
-    return { text, value: JSON.parse(text) };
+    return { kind: "json", text, value: JSON.parse(text) };
   } catch {
     throw new SboError("INVALID_BODY", "The body is not valid JSON. Fix it; nothing was sent.");
   }
 }
-async function write(options) {
+function wire(payload, headers, version, ids) {
+  switch (payload.kind) {
+    case "none":
+      return { headers };
+    case "json":
+      return { headers: hasHeader(headers, "Content-Type") ? headers : { ...headers, "Content-Type": "application/json" }, body: payload.text };
+    case "batch": {
+      const built = buildBatchBody(payload.batch, version, ids);
+      return { headers: { ...headers, "Content-Type": built.contentType }, body: built.body };
+    }
+    case "form": {
+      const built = buildFormData(payload.files);
+      return { headers: { ...headers, "Content-Type": built.contentType }, body: built.body };
+    }
+    case "stream":
+      return {
+        headers: { ...hasHeader(headers, "Content-Type") ? {} : { "Content-Type": payload.file.type }, ...hasHeader(headers, "Slug") ? {} : { Slug: payload.file.name }, ...headers },
+        body: payload.file.bytes
+      };
+  }
+}
+function shownBody(payload) {
+  switch (payload.kind) {
+    case "none":
+      return { cuerpo: null };
+    case "json":
+      return { cuerpo: payload.value };
+    case "form":
+      return { cuerpo: { formato: "multipart/form-data", archivos: payload.files.map((f) => ({ campo: "files", ...f.shown })) } };
+    case "stream":
+      return { cuerpo: { formato: "binario (el cuerpo es el archivo; su nombre va en Slug)", archivo: payload.file.shown } };
+    case "batch":
+      return { cuerpo: null };
+  }
+}
+function shownBatch(batch, version) {
+  const out = [];
+  let set = 0;
+  for (const item of batch.items) {
+    const group = item.kind === "changeset" ? `changeset ${++set}` : null;
+    for (const r of item.kind === "changeset" ? item.requests : [item.request]) {
+      out.push({
+        grupo: group,
+        ...r.contentId !== void 0 ? { contentId: r.contentId } : {},
+        metodo: r.method,
+        url: subRequestTarget(r, version),
+        cabeceras: subRequestHeaders(r),
+        cuerpo: r.body === void 0 ? null : tryParse(r.body)
+      });
+    }
+  }
+  return out;
+}
+var tryParse = (text) => {
   try {
-    assertEntitySet(options.entitySet);
-    if (options.method === "POST" && options.key !== void 0) throw new SboError("INVALID_ARGUMENTS", "POST takes no key. Usage: post <EntitySet> --body <json>");
-    if (options.method !== "POST" && options.key === void 0) throw new SboError("INVALID_ARGUMENTS", `Usage: ${options.method.toLowerCase()} <EntitySet> <key>${options.method === "PATCH" ? " --body '<json>'" : ""}`);
-    const body = await readBody(options);
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+function interestingHeaders(headers) {
+  const out = {};
+  for (const name of ["etag", "location", "odata-entityid", "preference-applied", "content-type", "content-disposition"]) {
+    const value = headers.get(name);
+    if (value) out[name] = value;
+  }
+  return out;
+}
+var isJson = (contentType) => /json/i.test(contentType ?? "");
+var isTextual = (contentType) => /^text\/|xml|html|javascript/i.test(contentType ?? "");
+function downloadName(response, path) {
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const star = /filename\*\s*=\s*(?:UTF-8|utf-8)''([^;]+)/.exec(disposition)?.[1];
+  const plain = /filename\s*=\s*"?([^";]+)"?/.exec(disposition)?.[1];
+  let name = star ? decodeURIComponentSafe(star) : plain;
+  if (!name) {
+    const query = /[?&]filename=('?)([^&]*?)\1(?:&|$)/i.exec(path)?.[2];
+    if (query) name = decodeURIComponentSafe(query);
+  }
+  if (!name) {
+    const resource = path.split("?", 1)[0].replace(/\/\$value$/i, "");
+    const last = resource.split("/").pop() ?? "";
+    name = `${last.replace(/[^A-Za-z0-9_.-]+/g, "-").replace(/^-+|-+$/g, "") || "download"}.${extensionFor(response.headers.get("content-type"))}`;
+  }
+  return safeFileName(name);
+}
+var decodeURIComponentSafe = (text) => {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+};
+function listKeys(dir, keys) {
+  return keys.length <= MAX_KEYS_IN_OUTPUT ? { claves: keys } : { indice: join4(dir, "_index.json") };
+}
+async function present(ctx, response, path, query, batch) {
+  const folder = folderName(path);
+  const common = { root: ctx.root, environment: ctx.environment, now: ctx.now(), newId: ctx.newId, entitySet: folder, query };
+  const contentType = response.headers.get("content-type");
+  const bytes = bodyBytes(response);
+  const answered = { cabecerasRespuesta: interestingHeaders(response.headers) };
+  if (bytes.byteLength === 0) return { tipo: "vacio", ...answered };
+  if (batch && /multipart\/mixed/i.test(contentType ?? "")) return { ...await presentBatch(response, common, batch), ...answered };
+  if (isJson(contentType)) {
+    let body;
+    try {
+      body = JSON.parse(response.text);
+    } catch {
+      body = void 0;
+    }
+    const rows = Array.isArray(body?.value) ? body.value : Array.isArray(body) ? body : void 0;
+    if (rows) {
+      const records = rows.map((r) => r !== null && typeof r === "object" && !Array.isArray(r) ? r : { value: r });
+      const next = body["@odata.nextLink"] ?? body["odata.nextLink"];
+      const total = body["@odata.count"] ?? body["odata.count"];
+      const { dir: dir2, keys } = await writeDump({ ...common, records, extra: { ...typeof next === "string" ? { nextLink: next } : {} } });
+      return {
+        tipo: "coleccion",
+        filas: keys.length,
+        ruta: dir2,
+        ...listKeys(dir2, keys),
+        ...typeof next === "string" ? { siguiente: next } : {},
+        ...total !== void 0 ? { totalSL: total } : {},
+        ...answered
+      };
+    }
+    if (body !== null && typeof body === "object" && !Array.isArray(body)) {
+      const { dir: dir2, keys } = await writeDump({ ...common, records: [body], keys: [objectKey(body)] });
+      return { tipo: "objeto", filas: 1, ruta: dir2, archivo: join4(dir2, folder, keyFileName(keys[0])), claves: keys, ...answered };
+    }
+  }
+  const textual = isJson(contentType) || isTextual(contentType);
+  const name = textual ? `response.${isJson(contentType) ? "json" : /xml/i.test(contentType ?? "") ? "xml" : /html/i.test(contentType ?? "") ? "html" : "txt"}` : downloadName(response, path);
+  const { dir, paths, names } = await writeFilesDump({ ...common, files: [{ name, bytes, contentType: contentType ?? void 0 }] });
+  return { tipo: textual ? "texto" : "binario", bytes: bytes.byteLength, contentType: contentType ?? null, ruta: dir, archivo: paths[0], nombre: names[0], ...answered };
+}
+async function presentBatch(response, common, batch) {
+  const parsed = parseBatchResponse(Buffer.from(bodyBytes(response)).toString("latin1"), response.headers.get("content-type"), true);
+  const flat = nameResponses(parsed, batch.items);
+  const taken = /* @__PURE__ */ new Set();
+  const ids = flat.map((f) => {
+    let id = f.id;
+    for (let n = 2; taken.has(id.toLowerCase()); n++) id = `${f.id}~${n}`;
+    taken.add(id.toLowerCase());
+    return id;
+  });
+  const files = [];
+  const records = flat.map((f, i) => {
+    const r = f.response;
+    const type = r.headers["content-type"];
+    const isFile = r.status < 400 && r.bytes !== void 0 && r.bytes.length > 0 && !isJson(type ?? null) && !isTextual(type ?? null);
+    if (!isFile) return { status: r.status, statusText: r.statusText, headers: r.headers, body: tryParse(r.body) };
+    const name = safeFileName(`${ids[i]}.${extensionFor(type)}`);
+    files.push({ name, bytes: r.bytes });
+    return { status: r.status, statusText: r.statusText, headers: r.headers, body: { binario: true, archivo: name, bytes: r.bytes.length, contentType: type ?? null } };
+  });
+  const { dir, keys } = await writeDump({ ...common, records, keys: ids, extra: { statuses: flat.map((f) => f.response.status) } });
+  await Promise.all(files.map((f) => writeFile5(join4(dir, common.entitySet, f.name), f.bytes)));
+  const failed = flat.filter((f) => f.response.status >= 400).length;
+  const sent = batchRequests(batch).length;
+  return {
+    tipo: "lote",
+    filas: keys.length,
+    ruta: dir,
+    claves: keys,
+    subrespuestas: flat.slice(0, 200).map((f) => ({
+      id: f.id,
+      estado: f.response.status,
+      ...f.response.status >= 400 ? { error: literalError(f.response) } : {}
+    })),
+    errores: failed,
+    ...failed > 0 || sent > flat.length ? { aviso: `${failed} sub-request(s) failed${sent > flat.length ? `; the batch stops at the first failure, so only ${flat.length} of ${sent} sub-requests have an answer (a failed changeset answers once for all of it)` : ""}. A failed changeset is rolled back as a whole.` } : {}
+  };
+}
+function literalError(r) {
+  const e = parseSlError(r.status, r.body);
+  return { code: e.code, message: e.message };
+}
+function nameResponses(parsed, requested) {
+  const out = [];
+  parsed.forEach((item, i) => {
+    const asked = requested[i];
+    if (item.kind === "response") {
+      const own = item.response.contentId ?? (asked?.kind === "request" ? asked.request.contentId : void 0);
+      out.push({ id: own ?? (asked?.kind === "changeset" ? `changeset-${i + 1}` : `part-${i + 1}`), response: item.response });
+    } else {
+      item.responses.forEach((response, j) => {
+        const own = response.contentId ?? (asked?.kind === "changeset" && asked.requests.length === item.responses.length ? asked.requests[j].contentId : void 0);
+        out.push({ id: own ?? `part-${i + 1}.${j + 1}`, response });
+      });
+    }
+  });
+  return out;
+}
+function entitySetsOf(path, batch) {
+  const paths = batch ? batchRequests(batch).map((r) => r.path) : [path];
+  return [...new Set(paths.map(entitySetOf).filter((e) => e !== null))];
+}
+async function runRequest(options) {
+  try {
+    const method = parseMethod(options.method);
+    const path = normalizePath(options.path);
+    const headers = parseHeaderFlags(options.headers);
+    const payload = await readPayload(options, method, path, headers);
+    const batch = payload.kind === "batch" ? payload.batch : void 0;
+    if (isBatchPath(path) && method !== "POST") throw new SboError("INVALID_METHOD", "$batch is always a POST.");
+    const allGet = batch ? batchRequests(batch).every((r) => r.method === "GET") : false;
+    if (options.read) {
+      if (method !== "GET" && method !== "POST") throw new SboError("READ_NOT_ALLOWED", `--read declares a POST a read; ${method} always writes. Remove --read.`);
+      if (payload.kind === "form" || payload.kind === "stream") throw new SboError("READ_NOT_ALLOWED", "--read cannot go with an upload: sending a file writes. Remove --read.");
+      if (batch && !allGet) throw new SboError("READ_NOT_ALLOWED", "--read is only for a batch whose sub-requests are all GET; this one has writes. Remove --read: it is then a dry run until --execute.");
+    }
+    const reads = method === "GET" || options.read === true;
+    const writesData = !reads && (batch ? !allGet : true);
     const ctx = await openUse(options);
-    const parsedKey = options.key === void 0 ? void 0 : parseKey(options.key);
-    const path = parsedKey ? `${options.entitySet}(${parsedKey.literal})` : options.entitySet;
-    const url = `${baseUrl(ctx.credentials.url, ctx.config.versionOData)}/${path}`;
-    const text = body?.text;
-    const peticion = { metodo: options.method, url, cuerpo: body?.value ?? null };
     const prod = ctx.environment === "prod";
-    if (options.execute && prod && !options.allowProd) {
+    if (options.execute && writesData && prod && !options.allowProd) {
       throw new SboError("PROD_WRITE_NOT_ALLOWED", `${ctx.environment} is production: a write needs ${PROD_FLAG} in this call, besides --execute. Ask the developer; it is not implied by any earlier approval. Nothing was sent.`);
     }
-    const context = await contextForOperation(ctx, options.entitySet, options.refreshContext);
-    if (!options.execute) {
-      const paraEjecutar = `Nothing was sent. After the developer approves, repeat the same call with --execute.${prod ? ` This is production: ${PROD_FLAG} is added only if the developer approves this production write explicitly.` : ""}`;
-      return success(null, { entorno: ctx.environment, ejecutado: false, peticion, paraEjecutar, ...context });
+    const version = ctx.config.versionOData;
+    const url = `${baseUrl(ctx.credentials.url, version)}/${path}`;
+    const sets = entitySetsOf(path, batch);
+    const contexts = await Promise.all(sets.map(async (s) => [s, await contextForOperation(ctx, s, options.refreshContext)]));
+    const context = sets.length === 0 ? {} : batch ? { contextos: Object.fromEntries(contexts.map(([s, c]) => [s, c])) } : contexts[0][1];
+    const toSend = wire(payload, headers, version);
+    const shownHeaders = Object.fromEntries(Object.entries(toSend.headers).map(([k, v]) => [k, /^content-type$/i.test(k) && /boundary=/i.test(v) ? v.replace(/boundary=.*$/i, "boundary=<generated>") : v]));
+    const peticion = {
+      metodo: method,
+      url,
+      cabeceras: shownHeaders,
+      ...batch ? { lote: shownBatch(batch, version) } : shownBody(payload)
+    };
+    if (!reads && !options.execute) {
+      const paraEjecutar = `Nothing was sent. After the developer approves, repeat the same call with --execute.${prod && writesData ? ` This is production: ${PROD_FLAG} is added only if the developer approves this production write explicitly.` : ""}`;
+      return success(null, { entorno: ctx.environment, ejecutado: false, tipo: batch ? "lote" : "peticion", peticion, paraEjecutar, ...context });
     }
-    const headers = text === void 0 ? {} : { "Content-Type": "application/json" };
-    const response = await withSession(ctx.session, (cookie) => request(ctx.transport, ctx.credentials, ctx.config.versionOData, options.method, path, cookie, headers, text));
-    const summary2 = { entorno: ctx.environment, ejecutado: true, peticion: { metodo: options.method, url }, ...context };
-    if (response.text.trim() !== "") {
-      try {
-        const record = parseJson(response);
-        const { dir, keys } = await writeDump({
-          root: ctx.root,
-          environment: ctx.environment,
-          now: ctx.now(),
-          newId: ctx.newId,
-          entitySet: options.entitySet,
-          query: { method: options.method, path },
-          records: [record],
-          keys: parsedKey ? [parsedKey.plain] : void 0
-        });
-        Object.assign(summary2, { filas: 1, ruta: dir, claves: keys });
-      } catch (e) {
-        summary2.volcadoError = `The write WAS done (HTTP ${response.status}) but its answer could not be saved: ${e.message}. Do not repeat the write; check with get.`;
-      }
+    const response = await withSession(ctx.session, (cookie) => request(ctx.transport, ctx.credentials, version, method, path, cookie, toSend.headers, toSend.body));
+    const summary2 = { entorno: ctx.environment, ejecutado: true, peticion: { metodo: method, url, cabeceras: shownHeaders }, ...context };
+    try {
+      Object.assign(summary2, await present(ctx, response, path, { method, path }, batch));
+    } catch (e) {
+      if (reads) throw e;
+      summary2.volcadoError = `The request WAS sent (HTTP ${response.status}) but its answer could not be saved: ${e.message}. Do not repeat a write; check with get.`;
     }
     return success(response.status, summary2);
   } catch (e) {
@@ -19828,10 +20585,9 @@ var USAGE = {
   traverse: "Usage: traverse <EntitySet> [--max-rows N] [--filter ...] [--select ...] [--orderby ...] [--expand ...]",
   count: "Usage: count <EntitySet> [--filter ...]",
   context: "Usage: context <EntitySet> [--refresh] [--show] [--tables TABLE,TABLE | default]",
+  entities: "Usage: entities [--refresh]",
   clean: "Usage: clean <id | folder name | path of the Volcado>",
-  post: "Usage: post <EntitySet> --body '<json>' | --body-file <path> [--execute]",
-  patch: "Usage: patch <EntitySet> <key> --body '<json>' | --body-file <path> [--execute]",
-  delete: "Usage: delete <EntitySet> <key> [--execute]"
+  request: `Usage: request <GET|POST|PATCH|PUT|DELETE> <path> [--header "Name: value"]... [--body '<json>' | --body-file <path> | --file <path>... | --stream-file <path>] [--read] [--execute] [--allow-prod]. The path is relative to the service root (Orders(5)/Cancel, SQLQueries('q')/List, $batch).`
 };
 function toInt(name, value) {
   if (value === void 0) return void 0;
@@ -19846,6 +20602,12 @@ function parseTables(value) {
   return tables;
 }
 async function main(argv, root, deps = {}) {
+  const run = { notes: {} };
+  let out = await dispatch(argv, root, deps, run);
+  if (!out.ok && run.ctx) out = await explainMissingEntity(run.ctx, out);
+  return out.ok && out.resumen && Object.keys(run.notes).length > 0 ? { ...out, resumen: { ...out.resumen, ...run.notes } } : out;
+}
+async function dispatch(argv, root, deps, run) {
   try {
     const { values, positionals } = parseArgs({
       args: argv,
@@ -19866,11 +20628,15 @@ async function main(argv, root, deps = {}) {
         body: { type: "string" },
         "body-file": { type: "string" },
         execute: { type: "boolean" },
-        "allow-prod": { type: "boolean" }
+        "allow-prod": { type: "boolean" },
+        header: { type: "string", multiple: true },
+        file: { type: "string", multiple: true },
+        "stream-file": { type: "string" },
+        read: { type: "boolean" }
       }
     });
     const [command, ...rest] = positionals;
-    const base = { root, environment: values.entorno, refreshContext: values["refresh-context"], ...deps };
+    const base = { root, environment: values.entorno, refreshContext: values["refresh-context"], run, ...deps };
     const query = { filter: values.filter, select: values.select, orderby: values.orderby, expand: values.expand };
     const one = (usage) => {
       if (rest.length !== 1) throw new SboError("INVALID_ARGUMENTS", usage);
@@ -19888,26 +20654,28 @@ async function main(argv, root, deps = {}) {
         return await count({ ...base, entitySet: one(USAGE.count), filter: values.filter });
       case "context":
         return await contextCommand({ ...base, entitySet: one(USAGE.context), refresh: values.refresh, show: values.show, tables: parseTables(values.tables) });
+      case "entities":
+        if (rest.length !== 0) throw new SboError("INVALID_ARGUMENTS", USAGE.entities);
+        return await entitiesCommand({ ...base, refresh: values.refresh });
       case "clean":
         return await cleanDump({ ...base, target: one(USAGE.clean) });
-      case "post":
-      case "patch":
-      case "delete": {
-        const wanted = command === "post" ? 1 : 2;
-        if (rest.length !== wanted) throw new SboError("INVALID_ARGUMENTS", USAGE[command]);
-        return await write({
+      case "request":
+        if (rest.length !== 2) throw new SboError("INVALID_ARGUMENTS", USAGE.request);
+        return await runRequest({
           ...base,
-          method: command.toUpperCase(),
-          entitySet: rest[0],
-          key: rest[1],
+          method: rest[0],
+          path: rest[1],
+          headers: values.header,
           body: values.body,
           bodyFile: values["body-file"],
+          files: values.file,
+          streamFile: values["stream-file"],
+          read: values.read,
           execute: values.execute,
           allowProd: values["allow-prod"]
         });
-      }
       default:
-        throw new SboError("UNKNOWN_COMMAND", `Unknown command "${command ?? ""}". Available: get, page, traverse, count, context, clean, post, patch, delete.`);
+        throw new SboError("UNKNOWN_COMMAND", `Unknown command "${command ?? ""}". Available: get, page, traverse, count, context, entities, clean, request.`);
     }
   } catch (e) {
     if (e.code?.startsWith("ERR_PARSE_ARGS")) return failure(new SboError("INVALID_ARGUMENTS", e.message));
