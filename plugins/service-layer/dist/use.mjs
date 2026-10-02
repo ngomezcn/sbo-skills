@@ -19627,7 +19627,12 @@ async function contextCommand(options) {
 }
 
 // src/use/get.ts
+var COMPOSITE_KEY = /^[A-Za-z_]\w*=('(?:[^']|'')*'|-?\d+)(,[A-Za-z_]\w*=('(?:[^']|'')*'|-?\d+))+$/;
 function parseKey(key) {
+  if (COMPOSITE_KEY.test(key)) {
+    const literal = key.replace(/'((?:[^']|'')*)'/g, (_, inner) => `'${encodeURIComponent(inner)}'`);
+    return { literal, plain: key.replace(/[='",]+/g, "-").replace(/^-|-$/g, "") };
+  }
   if (/^-?\d+$/.test(key)) return { literal: key, plain: key };
   const plain = /^'.*'$/s.test(key) ? key.slice(1, -1).replace(/''/g, "'") : key;
   return { literal: `'${encodeURIComponent(plain.replace(/'/g, "''"))}'`, plain };

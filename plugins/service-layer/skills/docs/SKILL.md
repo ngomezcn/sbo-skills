@@ -8,10 +8,14 @@ description: SAP Business One Service Layer reference (guide v1.29): login and s
 ## Before answering
 
 1. Read `.sbo-skills/service-layer/config.md`. If it does not exist, **stop**: tell the developer to run the **setup** skill first, and do not answer from this documentation without it.
-2. Take `versionB1` (for example `FP 2608`) from its front matter. Hojas mark where a function does not exist or changes by B1 version: check that what you are about to recommend exists in that version, and say so if it does not.
+2. Take `versionB1` (for example `FP 2608`) from its front matter. Apply the "Version gate" section below: it says when to open `availability.md`, which lists the whole sections that do not exist in older versions.
 3. `versionOData` (`v1` is OData V3, `v2` is OData V4) is the version the **use** skill calls; keep examples in line with it.
 
 Pick the row matching the question, open that index, then the single hoja it points to.
+
+## Version gate
+
+This reference describes FP 2608. Read the developer's B1 version in `.sbo-skills/service-layer/config.md` (if the file or the version is missing, stop and tell the developer to run the Setup). Compare the four-digit `YYMM` number, ignoring `FP`/`SP`. If it is 2608 or higher, skip this gate and do not open `availability.md`. If it is lower, including below the minimum FP 2208, open [availability.md](availability.md) once, before answering anything about webhooks or any other section it lists, even if the router row does not mention a version. It covers whole sections only, never entities or fields: for those, read the object context sheet `context/<Entity>.md` of the Uso tool.
 
 ## By intent
 
