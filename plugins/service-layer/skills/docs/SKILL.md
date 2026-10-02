@@ -1,0 +1,92 @@
+---
+name: docs
+description: SAP Business One Service Layer reference (guide v1.29): login and sessions, OData CRUD, query options, batch, UDF/UDT/UDO, attachments, semantic layer and SQL views, SQL Query, ETag, server configuration, webhooks, limitations, DI API comparison, OData protocol reference (headers, ETag, query options, metadata, status codes) under reference/odata/. Needs the Setup done (reads .sbo-skills/service-layer/config.md for the B1 version). Use when writing or debugging code that calls Service Layer, or when asked how a Service Layer feature behaves.
+---
+
+# SAP Business One Service Layer
+
+## Before answering
+
+1. Read `.sbo-skills/service-layer/config.md`. If it does not exist, **stop**: tell the developer to run the **setup** skill first, and do not answer from this documentation without it.
+2. Take `versionB1` (for example `FP 2608`) from its front matter. Hojas mark where a function does not exist or changes by B1 version: check that what you are about to recommend exists in that version, and say so if it does not.
+3. `versionOData` (`v1` is OData V3, `v2` is OData V4) is the version the **use** skill calls; keep examples in line with it.
+
+Pick the row matching the question, open that index, then the single hoja it points to.
+
+## By intent
+
+| Developer intent | Example questions | Go to |
+|---|---|---|
+| Learn what Service Layer is, its requirements, architecture and installation | "which OData version does /b1s/v2 use", "which OS does Service Layer run on", "can I install the load balancer remotely" | [introduction-getting-started](reference/introduction-getting-started/index.md) |
+| Log in or out, keep a session, read `$metadata` or the service document, understand the request URL | "how do I log in to Service Layer", "what is B1SESSION", "how do I get the metadata of one entity" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Create, read, update, delete entities, call actions, send a `$batch`, navigate associations, read one property | "how do I PATCH an order", "how do I close a document", "how do I send a change set" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Filter, select, order, paginate, aggregate, group, cross-join or expand a GET | "how do I paginate a GET", "$filter on a date", "sum DocTotal per card code", "$crossjoin two entities" | [query-options](reference/consuming-service-layer/query-options/index.md) |
+| Query SAP HANA analytics views or SQL Server views as OData | "how do I query a Semantic Layer view", "how do I expose a SQL view", "why do I get 401 on a view" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Work with user-defined fields, tables, objects and schemas | "how do I create a UDF", "how do I register a UDO", "how do I cancel a UDO entity", "B1S-Schema header" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Upload, download or update attachments, upload streams, handle item and employee images | "how do I upload an attachment", "attachment folder on Linux", "Slug header", "get an item picture" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Write, deploy and call server-side JavaScript | "how do I deploy a script", "how do I use EntitySet.query", "ScriptException", "call a script from .NET" | [javascript-extension](reference/consuming-service-layer/javascript-extension/index.md) |
+| Call Service Layer from a browser on another origin, or check that a node is alive | "how do I enable CORS", "what does /ping return" | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| Store, run, page and troubleshoot SQL queries through `SQLQueries`; allowlists, keywords, parameters, permissions | "how do I create a stored SQL query", "which tables can SQL Query read", "can I use union in a query", "why 403 on SQLQueries", "SQL query with parameters" | [sql-query](reference/sql-query/index.md) |
+| Prevent blind concurrent updates with ETag and `If-Match`, find ETag-enabled entities; build an integration or sync from an external system (CRM, e-commerce, middleware) without overwriting changes made by SAP users | "how do I use If-Match", "what is a 412 on PATCH", "which entities support ETag", "ETag in $metadata", "I am integrating SBO with Salesforce, how do I avoid overwriting changes", "lost update", "two-way sync conflicts", "does If-Match work in $batch" | [etag](reference/etag/index.md) |
+| Configure the server: Service Layer Controller, `b1s.conf` options, load balancer nodes, per-request headers, monitor request logs | "how do I change b1s.conf", "Service Layer Controller URL", "B1S-PageSize header", "where are the request logs", "add a node" | [configuring](reference/configuring/index.md) |
+| Enable webhooks, subscribe to business object events, manage subscriptions, read notifications and payloads, configure and troubleshoot the Webhook Messenger | "how do I create a webhook subscription", "what is the webhook payload", "how do I replay events", "webhook handshake fails", "EventSubscriptions", "error 10001237" | [webhooks](reference/webhooks/index.md) |
+| Check what Service Layer does not support: OData versions, XML payloads, batch rollback, query functions, JSONP, user transactions, ImportFromXML/ExportToXML | "does Service Layer support JSONP", "can I roll back a batch", "is there StartTransaction", "arithmetic in $filter" | [limitations](reference/limitations/index.md) |
+| Understand high availability, load balancing, sticky sessions and node failover | "what happens when a node fails", "sticky sessions", "how is the load balanced" | [high-availability-load-balancing](reference/high-availability-load-balancing/index.md) |
+| Look up general FAQs and common issues: DI API vs Service Layer, PUT vs PATCH, X-HTTP-Method-Override, service autostart, HANA client path; troubleshoot CORS errors in the browser; intermittent errors where some sessions always fail (broken node behind a load balancer, `ROUTEID`) | "what if my client does not support PATCH", "does b1s start with the system", "HANA client not in default location", "No Access-Control-Allow-Origin header is present", "preflight OPTIONS fails" | [faq](reference/faq/index.md) |
+| Port DI API code to Service Layer, or map DI API names to Service Layer names | "how do I call StartTransaction in Service Layer", "DI API Recordset equivalent", "what is the Service Layer name of this DI API collection", "UDO created with DI API, now with Service Layer" | [appendix-di-api-comparison](reference/appendix-di-api-comparison/index.md) |
+| Filter webhook events with a formula (operators, string, date, time, math and logical functions, app variables) | "how do I filter webhook events", "FilterExpr syntax", "IFNULL in a webhook formula" | [webhook-formula](reference/webhooks/webhook-formula/index.md) |
+| Look up generic OData protocol rules (ETag, Prefer, status codes, `$metadata` CSDL shape, context URL, nextLink) that Service Layer builds on | "what does 412 mean in OData", "what is @odata.nextLink", "how do I read EntityType in $metadata", "Prefer return=minimal" | [odata](reference/odata/index.md) |
+
+## Confusable terms
+
+| Term | Means | Go to |
+|---|---|---|
+| Load balancer (architecture) | Apache as transit point and session stickiness in the deployment layout (sec 2.2, 2.3); sticky-session configuration is ch. 9 | [architecture-and-installation](reference/introduction-getting-started/architecture-and-installation.md) |
+| Installation | topologies and firewall recommendation (sec 2.3), not server settings (ch. 6) | [architecture-and-installation](reference/introduction-getting-started/architecture-and-installation.md) |
+| OData version URIs | `/b1s/v1` vs `/b1s/v2` `$metadata` (sec 1), not the metadata document (sec 3.2) | [introduction](reference/introduction-getting-started/introduction.md) |
+| Semantic Layer View Exposure | exposing SAP HANA analytics views through `sml.svc` (sec 3.7, SAP HANA only) | [semantic-layer-views](reference/consuming-service-layer/semantic-layer-views/index.md) |
+| SQL View Exposure | exposing customized SQL Server views through `view.svc` and the `SQLViews` entity (sec 3.8); not stored SQL queries (ch. 4) | [sql-view-exposure](reference/consuming-service-layer/sql-view-exposure/index.md) |
+| CRUD operations | OData entity POST/GET/PATCH/DELETE (sec 3.4); UDF/UDT/UDO CRUD are in their own hojas, script CRUD is the Entity CRUD API (sec 3.19.5.3) | [crud-operations](reference/consuming-service-layer/crud-operations.md) |
+| Metadata | `$metadata` and service document (sec 3.2, 3.3); Semantic Layer metadata is sec 3.7.5; UDO metadata is sec 3.15.1 | [metadata-document](reference/consuming-service-layer/metadata-document.md) |
+| Query options | OData `$filter`, `$select`, `$apply` and the like on GET (sec 3.6); script queries are the Entity Query API (sec 3.19.5.4) | [query-options](reference/consuming-service-layer/query-options/index.md) |
+| Pagination | `$top`/`$skip` and `odata.nextLink` on entity collections (sec 3.6.6) | [pagination](reference/consuming-service-layer/query-options/pagination.md) |
+| Transactions | `$batch` change sets (sec 3.9.4) vs the script Transaction API (sec 3.19.5.5) | [batch-operations](reference/consuming-service-layer/batch-operations.md) |
+| Attachments vs stream entities vs images | `Attachments2` folders and lines (sec 3.16), `Slug` stream upload (sec 3.17), item and employee pictures (sec 3.18) | [attachments](reference/consuming-service-layer/attachments/index.md) |
+| User-defined schemas / fields / tables / objects | schema files (sec 3.12), UDFs (sec 3.13), UDTs (sec 3.14), UDOs (sec 3.15) | [consuming-service-layer](reference/consuming-service-layer/index.md) |
+| CORS | browser cross-origin settings in `b1s.conf` (sec 3.20); other settings are ch. 6; CORS errors and how to test them are in the FAQ common issues | [cors](reference/consuming-service-layer/cors.md), [common-issues](reference/faq/common-issues.md) |
+| Ping Pong API | `/ping` health endpoints (sec 3.21); load balancing configuration is ch. 9 | [ping-pong-api](reference/consuming-service-layer/ping-pong-api.md) |
+| SQL Query | the `SQLQueries` entity running stored SQL under an allowlist (ch. 4); views are SQL View Exposure (sec 3.8) / Semantic Layer (sec 3.7) | [sql-query](reference/sql-query/index.md) |
+| CRUD on SQLQueries | CRUD of stored queries (sec 4.2), not entity CRUD (sec 3.4) or the DI API comparison (ch. 11) | [crud-operations](reference/sql-query/crud-operations.md) |
+| List with paging | paging a stored query's `List` result (sec 4.4), not `$top`/`$skip` (sec 3.6.6) | [list-with-paging](reference/sql-query/list-with-paging.md) |
+| Query allowlist vs permission control | which tables and columns are queryable (sec 4.5) vs which users may run queries (sec 4.11) | [query-allowlist](reference/sql-query/query-allowlist/index.md) |
+| Business object metadata | the `SQLQuery` EntityType and `List` function (sec 4.1), not the metadata document (sec 3.2) | [overview-and-business-object-metadata](reference/sql-query/overview-and-business-object-metadata.md) |
+| SQL Query limitations | what stored queries cannot access (sec 4.13), not general limitations (ch. 8) | [sql-query-limitations](reference/sql-query/sql-query-limitations.md) |
+| ETag guide | when to use ETag in integrations and verified behavior (`DataVersion`, `$select`, `$batch`, `If-Match` values); the PDF's scenarios are sec 5.2 | [etag-guide](reference/etag/etag-guide.md) |
+| ETag metadata | ETag annotations of entities in `$metadata` (sec 5.4), not the metadata document (sec 3.2), `SQLQuery` metadata (sec 4.1) or metadata naming differences (ch. 12) | [etag-entities-and-metadata](reference/etag/etag-entities-and-metadata.md) |
+| ETag on update, delete and action | `If-Match` and 412 for concurrent changes (sec 5.2), not plain entity CRUD (sec 3.4), actions (sec 3.5) or `$batch` change sets (sec 3.9) | [etag-usage](reference/etag/etag-usage.md) |
+| Configuration by request vs server configuration | per-request HTTP headers (sec 6.3) vs `b1s.conf` options (sec 6.2) and Controller settings (sec 6.1); webhook configuration is sec 7.5 | [configuration-by-request](reference/configuring/configuration-by-request.md) |
+| Monitoring Service Layer logs | Controller request logs (sec 6.4), not SQL query log modification (sec 4.12.2) | [monitoring-logs](reference/configuring/monitoring-logs.md) |
+| Log file configuration | enabling and collecting log files on disk: access, error, SSL, request/response, OBServer, core dump (SAP KBA 3157498); not the Controller Monitor tab (sec 6.4) | [log-file-configuration](reference/configuring/log-file-configuration.md) |
+| Webhooks FAQ | retry, replay, ordering, duplicates and URL validation of webhooks (sec 7.8); general Service Layer questions are ch. 10 | [faq](reference/webhooks/faq.md) |
+| Webhook configuration | company-level `AdminInfo` webhook settings (sec 7.5), not server settings (ch. 6) or per-request headers (sec 6.3) | [webhook-configuration](reference/webhooks/webhook-configuration.md) |
+| Webhook endpoint sample | sample receiver code (Node.js): handshake reply, Basic/HMAC/OAuth validation; the protocol contract is in handshake-mechanism (sec 7.3.1.1) | [webhook-endpoint-sample](reference/webhooks/webhook-endpoint-sample.md) |
+| Webhook Messenger | the daemon that delivers notifications, health check and certificate import (sec 7.6); load balancing is ch. 9 | [webhook-messenger](reference/webhooks/webhook-messenger.md) |
+| Event subscription vs event notification | `EventSubscriptions` define what to listen to (sec 7.3); `EventNotifications` record what was sent (sec 7.4) | [subscription-operations](reference/webhooks/event-subscription/subscription-operations.md) |
+| Webhook handshake | endpoint validation of a webhook URL (sec 7.3.1.1), not Service Layer login (sec 3.1) | [handshake-mechanism](reference/webhooks/event-subscription/handshake-mechanism.md) |
+| Webhook permission control | who may manage event subscriptions (sec 7.3.3), not view or query permissions (sec 3.7.6, 3.8.5, 4.11) | [subscription-permission-control](reference/webhooks/event-subscription/subscription-permission-control.md) |
+| Webhook formula | `FilterExpr` language with its own functions (sec 7.7), not OData `$filter` (sec 3.6) or SQL functions (sec 4.7) | [webhook-formula](reference/webhooks/webhook-formula/index.md) |
+| Replay vs retry | replaying a subscription's events (sec 7.3.1) vs automatic retry of failed deliveries (sec 7.8) | [faq](reference/webhooks/faq.md) |
+| Limitations | service-wide unsupported features (ch. 8); stored SQL query limits are sec 4.13 | [limitations](reference/limitations/limitations.md) |
+| Sticky sessions | why same-session requests reach the same node, and failover via the shared session (ch. 9); not login and session usage (sec 3.1) | [high-availability-load-balancing](reference/high-availability-load-balancing/high-availability-load-balancing.md) |
+| FAQ / common issues | general Service Layer questions (ch. 10); typical problems such as CORS errors (not from the PDF) and intermittent errors from a broken node behind a load balancer (verified on FP 2608 only); webhooks questions are sec 7.8 | [faq](reference/faq/index.md) |
+| PUT vs PATCH | replacement vs differential update and the `X-HTTP-Method-Override` header (ch. 10); entity CRUD is sec 3.4, `If-Match` concurrency is sec 5.2 | [faq](reference/faq/faq.md) |
+| Service Layer vs DI API / DI Server | the short differences in the FAQ (ch. 10), the functional gaps in sec 8.2, the full comparison in Appendix I and II | [faq](reference/faq/faq.md) |
+| CRUD APIs (DI API comparison) | side-by-side DI API and Service Layer Order calls (sec 11.1); not entity CRUD (sec 3.4) or stored-query CRUD (sec 4.2) | [crud-apis](reference/appendix-di-api-comparison/crud-apis.md) |
+| Query APIs (DI API comparison) | DI API `DoQuery` vs Service Layer queries (sec 11.4); not OData query options (sec 3.6), List with paging (sec 4.4) or pagination (sec 3.6.6) | [query-apis](reference/appendix-di-api-comparison/query-apis.md) |
+| Transaction APIs (DI API comparison) | DI API transactions vs `$batch` (sec 11.3); see also `$batch` change sets (sec 3.9.4), the script Transaction API (sec 3.19.5.5) and limitations (ch. 8) | [transaction-apis](reference/appendix-di-api-comparison/transaction-apis.md) |
+| UDO / UDF APIs (DI API comparison) | DI API vs Service Layer examples for UDOs and UDFs (sec 11.5, 11.6); the Service Layer reference is sec 3.13 and 3.15 | [udo-apis](reference/appendix-di-api-comparison/udo-apis.md) |
+| Metadata naming differences | DI API vs Service Layer names of collections, objects and properties (ch. 12); not the metadata document (sec 3.2), `SQLQuery` metadata (sec 4.1) or ETag metadata (sec 5.4) | [metadata-naming-differences](reference/appendix-di-api-comparison/metadata-naming-differences.md) |
+| OData ETag (protocol) | Generic `ETag` / `If-Match` / `If-None-Match` rules from OData 4.01; SL-specific hashing, placement and quirks stay in the etag apartado | [etag-and-concurrency](reference/odata/headers-and-versioning/etag-and-concurrency.md), [etag](reference/etag/index.md) |
+| OData query options (protocol) | Generic `$filter`/`$select`/`$expand`/`$count` semantics; SL-supported operators and examples stay under consuming-service-layer query-options | [query-options](reference/odata/query-options/index.md), [query-options](reference/consuming-service-layer/query-options/index.md) |
+| OData `$metadata` / CSDL | How to read Edm types, EntityType, Annotation in the metadata document; SL Metadata Document scenarios stay in consuming-service-layer | [metadata-and-annotations](reference/odata/metadata-and-annotations/index.md), [metadata-document](reference/consuming-service-layer/metadata-document.md) |
+| OData `$batch` / async | Generic batch/async preferences are not documented in `reference/odata/` (bloque dropped); SL multipart `$batch` stays in batch-operations | [batch-operations](reference/consuming-service-layer/batch-operations.md) |

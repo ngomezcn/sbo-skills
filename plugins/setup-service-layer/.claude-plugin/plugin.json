@@ -1,6 +1,0 @@
-{
-  "name": "setup-service-layer",
-  "version": "0.0.1",
-  "description": "Prepara .sbo-b1/service-layer/ con version de B1, credenciales y cache de metadatos por entorno.",
-  "author": { "name": "ngomez" }
-}

@@ -6,19 +6,9 @@
   },
   "plugins": [
     {
-      "name": "setup-service-layer",
-      "source": "./plugins/setup-service-layer",
-      "description": "Configura .sbo-b1/service-layer/: version de B1, credenciales por entorno y cache de metadatos."
-    },
-    {
-      "name": "docs-service-layer",
-      "source": "./plugins/docs-service-layer",
-      "description": "Documentacion de SAP B1 Service Layer valida para todas las versiones, con marcas de disponibilidad por version."
-    },
-    {
-      "name": "use-service-layer",
-      "source": "./plugins/use-service-layer",
-      "description": "Opera contra un Service Layer real de SAP B1 (requiere setup-service-layer y docs-service-layer)."
+      "name": "service-layer",
+      "source": "./plugins/service-layer",
+      "description": "SAP B1 Service Layer en un solo plugin: Setup (credenciales por entorno, version de B1 y de OData), Uso (lecturas y escrituras en seco contra el sistema real) y Documentacion (valida para todas las versiones)."
     }
   ]
 }
