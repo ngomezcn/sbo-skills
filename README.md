@@ -17,7 +17,7 @@ Requisitos: Node 20 o superior. El plugin guarda sus datos locales en `.sbo-skil
 
 ## Instalacion
 
-    /plugin marketplace add <owner>/sbo-skills
+    /plugin marketplace add ngomezcn/sbo-skills
     /plugin install service-layer@sbo-skills
 
 Despues, pide a Claude que configure Service Layer (skill `setup`).
