@@ -18863,6 +18863,11 @@ var SUPPORTED_B1_VERSIONS = [
   "FP 2608"
 ];
 var ODATA_VERSIONS = ["v1", "v2"];
+var LANGUAGES = ["en", "es"];
+function checkLanguage(input) {
+  if (LANGUAGES.includes(input)) return input;
+  throw new SboError("INVALID_LANGUAGE", `"${input}" is not a language. Use "en" (English) or "es" (Spanish).`);
+}
 var ENVIRONMENTS = ["dev", "uat", "prod"];
 function isEnvironment(value) {
   return ENVIRONMENTS.includes(value);
@@ -18906,6 +18911,7 @@ async function writeConfig(root, config) {
   await writeFile(configPath(root), `---
 versionB1: ${config.versionB1}
 versionOData: ${config.versionOData}
+language: ${config.language}
 ---
 `);
 }
@@ -18925,7 +18931,7 @@ async function readConfig(root) {
   if (!values.versionB1 || !values.versionOData) {
     throw new SboError("CONFIG_INVALID", `config.md lacks versionB1 or versionOData. ${SETUP_HINT}`);
   }
-  return { versionB1: values.versionB1, versionOData: checkODataVersion(values.versionOData) };
+  return { versionB1: values.versionB1, versionOData: checkODataVersion(values.versionOData), language: checkLanguage(values.language ?? "en") };
 }
 async function writeCredentials(root, env, credentials) {
   await mkdir(envDir(root, env), { recursive: true });
@@ -18948,15 +18954,22 @@ async function readCredentials(root, env) {
   return parsed;
 }
 var CREDENTIAL_FIELDS = ["url", "companyDB", "userName", "password"];
+var TEMPLATE_EXAMPLE = {
+  url: "https://localhost:50000/",
+  companyDB: "SBODemoES",
+  userName: "manager",
+  password: "your-password-here"
+};
+var isBlank = (field, value) => typeof value !== "string" || value.trim() === "" || field === "password" && value === TEMPLATE_EXAMPLE.password;
 function assertCredentials(value, env) {
   const record = value ?? {};
-  const missing = CREDENTIAL_FIELDS.filter((f) => typeof record[f] !== "string" || record[f] === "");
+  const missing = CREDENTIAL_FIELDS.filter((f) => isBlank(f, record[f]));
   if (missing.length > 0) {
     throw new SboError("CREDENTIALS_INVALID", `Credentials of "${env}" lack: ${missing.join(", ")}. Run the service-layer Setup again.`);
   }
 }
 async function writeCredentialsTemplate(root, env) {
-  await writeCredentials(root, env, { url: "", companyDB: "", userName: "", password: "" });
+  await writeCredentials(root, env, TEMPLATE_EXAMPLE);
 }
 async function environmentsWithCredentialsFile(root) {
   const found = [];
@@ -18976,7 +18989,7 @@ async function missingCredentialFields(root, env) {
   } catch {
     throw new SboError("CREDENTIALS_INVALID", `${LOCAL_DIR}/${SYSTEM}/${env}/credentials.json is not valid JSON. Fix the file, or run the service-layer Setup again.`);
   }
-  return CREDENTIAL_FIELDS.filter((f) => typeof parsed?.[f] !== "string" || parsed[f].trim() === "");
+  return CREDENTIAL_FIELDS.filter((f) => isBlank(f, parsed?.[f]));
 }
 async function configuredEnvironments(root) {
   const found = [];
@@ -19511,7 +19524,7 @@ async function initSetup(options) {
   const { version, warnings } = checkB1Version(options.versionB1);
   const versionOData = checkODataVersion(options.versionOData);
   await clearLocalState(options.root);
-  await writeConfig(options.root, { versionB1: version, versionOData });
+  await writeConfig(options.root, { versionB1: version, versionOData, language: checkLanguage(options.language ?? "en") });
   const files = [];
   for (const name of names) {
     await writeCredentialsTemplate(options.root, name);
@@ -19585,7 +19598,7 @@ async function status(root) {
   const environments = await configuredEnvironments(root);
   if (environments.length === 0) throw new SboError("SETUP_MISSING", "No environment is configured. Run the service-layer Setup.");
   const config = await readConfig(root);
-  return { output: { ok: true, versionB1: config.versionB1, versionOData: config.versionOData, environments }, exitCode: 0 };
+  return { output: { ok: true, versionB1: config.versionB1, versionOData: config.versionOData, language: config.language, environments }, exitCode: 0 };
 }
 async function verify(root) {
   const r = await verifySetup({ root });
@@ -19598,7 +19611,7 @@ async function addEnv(root, environment) {
       ok: true,
       initialised: [r.environment],
       fillIn: [{ file: r.file, fields: ["url", "companyDB", "userName", "password"] }],
-      next: "The developer fills in url, companyDB, userName and password in the file, then --verify runs."
+      next: "The developer replaces the example values in the file with their own, then --verify runs."
     },
     exitCode: 0
   };
@@ -19609,14 +19622,14 @@ async function init(root, values) {
   const envs = values.envs;
   if (!envs) throw new SboError("MISSING_ARGUMENT", "Pass --envs with the environments, for example --envs dev,uat.");
   const environments = envs.split(",").map((e) => e.trim()).filter(Boolean);
-  const result = await initSetup({ root, versionB1: b1, versionOData: values.odata ?? defaultODataVersion(b1), environments });
+  const result = await initSetup({ root, versionB1: b1, versionOData: values.odata ?? defaultODataVersion(b1), language: values.language, environments });
   return {
     output: {
       ok: true,
       initialised: result.environments,
       fillIn: result.files.map((file) => ({ file, fields: ["url", "companyDB", "userName", "password"] })),
       warnings: result.warnings,
-      next: "The developer fills in url, companyDB, userName and password in each file, then --verify runs."
+      next: "The developer replaces the example values in each file with their own, then --verify runs."
     },
     exitCode: 0
   };
@@ -19625,6 +19638,7 @@ async function main(argv, _env, root) {
   const options = {
     b1: { type: "string" },
     odata: { type: "string" },
+    language: { type: "string" },
     envs: { type: "string" },
     "add-env": { type: "string" },
     init: { type: "boolean" },

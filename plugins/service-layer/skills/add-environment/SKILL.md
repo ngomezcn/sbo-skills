@@ -9,7 +9,7 @@ Adds one environment to a setup that already exists. What is configured stays as
 
 ## 1. Which environment
 
-If the developer did not say which one, run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --status` and ask which of `dev`, `uat` and `prod` they want to add, one question only. Do not offer the ones `--status` lists as configured.
+Read `.sbo-skills/service-layer/config.md` (it holds no secrets). Its `language` (`en` or `es`; English if missing) is the language you talk to the developer in, here and until the end; everything below is written in English, translate it and keep the commands, file names and field names. If the developer did not say which environment, ask which of `dev`, `uat` and `prod` they want to add, one question only. Step 2 refuses one that already exists.
 
 ## 2. Add it
 
@@ -20,11 +20,11 @@ node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --add-env uat
 - `SETUP_MISSING`: there is no setup yet. Tell the developer to run `/service-layer:setup` first.
 - `ENVIRONMENT_EXISTS`: it already exists. Tell them to edit its `credentials.json`, or to run `/service-layer:setup` to start over (that erases everything).
 
-The answer lists the new file under `fillIn`, with all four fields empty.
+The answer lists the new file under `fillIn`. It holds example values (`https://localhost:50000/`, `SBODemoES`, `manager`, `your-password-here`).
 
 ## 3. The developer fills in the connection data
 
-Tell the developer to open that file, relative to the repo root, and write the four fields: Service Layer URL (for example `https://host:50000`), company database, user name and password. Then save. Include this notice:
+Tell the developer to open that file, relative to the repo root, and replace the example values with their own: Service Layer URL, company database, user name and password. The password must be changed, otherwise the environment stays pending. Then save. Include this notice:
 
 > **Privacy:** this data never leaves your machine. Only the Service Layer tool reads it, to connect to your server. The AI agent cannot see it and does not read this file.
 

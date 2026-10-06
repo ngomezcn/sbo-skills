@@ -12,6 +12,7 @@ Run every command with `node "${CLAUDE_PLUGIN_ROOT}/dist/use.mjs" <command> ...`
 - With several environments configured, pass `--entorno dev|uat|prod` on every call. With one, it is used.
 - Never read `.sbo-skills/service-layer/*/credentials.json` or `session.json`, and never print them. The tool logs in by itself.
 - The OData version (`v1` or `v2`) is the one the Setup saved. Do not change it.
+- Talk to the developer in the `language` saved in `.sbo-skills/service-layer/config.md` (`en` English, `es` Spanish; English if the line is missing). Commands, entity names and the Service Layer's own messages stay as they are.
 
 ## Reading
 

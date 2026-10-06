@@ -10,6 +10,7 @@ description: SAP Business One Service Layer reference (guide v1.29): login and s
 1. Read `.sbo-skills/service-layer/config.md`. If it does not exist, **stop**: tell the developer to run the **setup** skill first, and do not answer from this documentation without it.
 2. Take `versionB1` (for example `FP 2608`) from its front matter. Apply the "Version gate" section below: it says when to open `availability.md`, which lists the whole sections that do not exist in older versions.
 3. `versionOData` (`v1` is OData V3, `v2` is OData V4) is the version the **use** skill calls; keep examples in line with it.
+4. `language` (`en` English, `es` Spanish; English if the line is missing) is the language you answer in. Code, entity names and quotes from the documentation stay as they are.
 
 Pick the row matching the question, open that index, then the single hoja it points to.
 

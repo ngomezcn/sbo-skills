@@ -18849,6 +18849,11 @@ import { join } from "node:path";
 
 // src/common/versions.ts
 var ODATA_VERSIONS = ["v1", "v2"];
+var LANGUAGES = ["en", "es"];
+function checkLanguage(input) {
+  if (LANGUAGES.includes(input)) return input;
+  throw new SboError("INVALID_LANGUAGE", `"${input}" is not a language. Use "en" (English) or "es" (Spanish).`);
+}
 var ENVIRONMENTS = ["dev", "uat", "prod"];
 function isEnvironment(value) {
   return ENVIRONMENTS.includes(value);
@@ -18894,7 +18899,7 @@ async function readConfig(root) {
   if (!values.versionB1 || !values.versionOData) {
     throw new SboError("CONFIG_INVALID", `config.md lacks versionB1 or versionOData. ${SETUP_HINT}`);
   }
-  return { versionB1: values.versionB1, versionOData: checkODataVersion(values.versionOData) };
+  return { versionB1: values.versionB1, versionOData: checkODataVersion(values.versionOData), language: checkLanguage(values.language ?? "en") };
 }
 async function readCredentials(root, env) {
   let text;
@@ -18913,9 +18918,16 @@ async function readCredentials(root, env) {
   return parsed;
 }
 var CREDENTIAL_FIELDS = ["url", "companyDB", "userName", "password"];
+var TEMPLATE_EXAMPLE = {
+  url: "https://localhost:50000/",
+  companyDB: "SBODemoES",
+  userName: "manager",
+  password: "your-password-here"
+};
+var isBlank = (field, value) => typeof value !== "string" || value.trim() === "" || field === "password" && value === TEMPLATE_EXAMPLE.password;
 function assertCredentials(value, env) {
   const record = value ?? {};
-  const missing = CREDENTIAL_FIELDS.filter((f) => typeof record[f] !== "string" || record[f] === "");
+  const missing = CREDENTIAL_FIELDS.filter((f) => isBlank(f, record[f]));
   if (missing.length > 0) {
     throw new SboError("CREDENTIALS_INVALID", `Credentials of "${env}" lack: ${missing.join(", ")}. Run the service-layer Setup again.`);
   }
@@ -18938,7 +18950,7 @@ async function missingCredentialFields(root, env) {
   } catch {
     throw new SboError("CREDENTIALS_INVALID", `${LOCAL_DIR}/${SYSTEM}/${env}/credentials.json is not valid JSON. Fix the file, or run the service-layer Setup again.`);
   }
-  return CREDENTIAL_FIELDS.filter((f) => typeof parsed?.[f] !== "string" || parsed[f].trim() === "");
+  return CREDENTIAL_FIELDS.filter((f) => isBlank(f, parsed?.[f]));
 }
 async function configuredEnvironments(root) {
   const found = [];
