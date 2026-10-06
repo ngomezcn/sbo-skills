@@ -1,38 +1,34 @@
 # Service Layer Skills For SAP Business One
 
-Agent skills to work with a real SAP Business One Service Layer from Claude Code: read data, change it safely and look up how the Service Layer behaves, without ever handing your credentials to the AI.
+A Claude Code plugin to work with a real SAP Business One Service Layer: read data, change it safely and look up how the Service Layer behaves, without ever handing your user and password to the AI.
 
 Working against a live ERP is hard. Pasting passwords into a chat, letting an agent guess entity names, or having it fire a `POST` at production on its own are all ways to have a very bad day. These skills are designed to be small, explicit and safe by default: every write is shown to you before it is sent.
 
 ## Installation (30-second setup)
 
-### 1. Get the plugin
+This is a **Claude Code** plugin. It needs Claude Code and Node 20 or later; other agents are not supported for now.
 
-<details>
-<summary><strong>Claude Code</strong></summary>
+### 1. Install the plugin
 
-Install the `service-layer` plugin from the `sbo-skills` repository. It installs the three skills (`setup`, `use`, `docs`) as one bundle: they are meant to be used together, so there is nothing to pick.
+In Claude Code:
 
-Requires Node 20 or later.
+```
+/plugin marketplace add ngomezcn/sbo-skills
+/plugin install service-layer@sbo-skills
+```
 
-</details>
+It installs the three skills (`setup`, `use`, `docs`) as one bundle: they are meant to be used together, so there is nothing to pick.
 
 ### 2. Run the Setup
 
-Tell Claude *"set up Service Layer"*. It gives you one command, with the path already expanded. Run it in **your own terminal**, at the root of your repo:
+Open Claude Code in your repo and say *"set up Service Layer"*. It is a conversation:
 
-```
-node "<plugin folder>/dist/setup.mjs"
-```
+1. Claude asks for the B1 version, the OData version (`v1` is OData V3, `v2` is OData V4; it proposes `v2` from FP 2405), which environments you want (`dev`, `uat`, `prod`; at least one) and, for each, the Service Layer URL and the company database. It shows you a summary and waits for your approval.
+2. Claude creates `.sbo-skills/service-layer/` with the configuration and one `credentials.json` per environment, with the URL and company filled in and `userName` and `password` **empty**. It also adds `.sbo-skills/` to your `.gitignore`.
+3. **You** open each `credentials.json` in your editor, type the user and the password and save. Tell Claude when you are done.
+4. Claude tests every login and builds an index of the entities each environment exposes. If a login fails, it tells you the Service Layer error; fix the file and ask it to verify again.
 
-It will:
-
-- Ask for the B1 version and the OData version (`v1` is OData V3, `v2` is OData V4; `v2` is preselected from FP 2405)
-- Ask, for each environment you want (`dev`, `uat`, `prod`; at least one), the Service Layer URL, company database, user and password
-- Test every login, and build an index of the entities each environment exposes
-- Add `.sbo-skills/` to your `.gitignore` (it holds the passwords in plain text)
-
-You type the credentials in your terminal, so they never enter the conversation. Run it again at any time to start from scratch. When it finishes, tell Claude: it checks the result with `setup.mjs --status`, which never shows credentials.
+Run the Setup again at any time to start from scratch.
 
 ### 3. Bam - you're ready to go.
 
@@ -46,10 +42,10 @@ I built these to fix the common failure modes of an agent talking to a live Serv
 
 **The Problem**: To log in, the agent needs a URL, a company, a user and a password. The easy path is to paste them into the chat. From then on they live in the conversation, in logs, and in whatever the model provider keeps.
 
-**The Fix** is the **`setup` skill**: a script you run in your own terminal. The AI never asks for credentials, never reads them, and refuses to repeat them if you paste one by mistake. The tool logs in by itself, so `Login` and `Logout` are not even requestable.
+**The Fix** is the **`setup` skill**: Claude asks only what is not secret (versions, environments, URL, company) and you type the user and the password yourself into a file in your repo. The skill's rules forbid Claude to ask for them, to read that file or to repeat them if you paste one by mistake. The tool logs in by itself, so `Login` and `Logout` are not even requestable.
 
 > [!NOTE]
-> The password stays in plain text in `.sbo-skills/service-layer/<env>/credentials.json`, ignored by git. Anyone who can read your repo folder can read it.
+> The password stays in plain text in `.sbo-skills/service-layer/<env>/credentials.json`, ignored by git. Anyone who can read your repo folder can read it. Keeping it out of the conversation relies on the skill's rules: nothing technical stops Claude's tools from opening that file.
 
 ### #2: The Agent Guesses Entities And Fields
 
@@ -175,7 +171,7 @@ If you ask before running the Setup, the `docs` skill stops and asks you to run 
 
 ### Skills
 
-- **[setup](./skills/setup/SKILL.md)**: Configure the connection to Service Layer: B1 version, OData version and the credentials of `dev`, `uat` and `prod`, with a login test. A script you run in your own terminal; the AI never handles the credentials.
+- **[setup](./skills/setup/SKILL.md)**: Configure the connection to Service Layer: B1 version, OData version and `dev`, `uat` and `prod`, with a login test. A conversation; you type the user and the password into a file yourself and Claude never handles them.
 - **[use](./skills/use/SKILL.md)**: Operate against a configured environment: read entities, read the object context of an entity, find which entities exist, and make any other call with `request`, with the dry-run-first write flow.
 - **[docs](./skills/docs/SKILL.md)**: Service Layer reference (guide v1.29) for all B1 versions. Needs the Setup.
 
@@ -219,8 +215,7 @@ Do **not** allow `request` for other methods (nor `request POST ... --read`): th
 
 | You see | Do |
 |---|---|
-| `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED` | Run the Setup (again). An environment whose login failed is not configured. |
-| `NEEDS_TERMINAL` | The Setup needs an interactive terminal: run it yourself, not through Claude. |
+| `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED` | Run the Setup (again), and check that `userName` and `password` are filled in the environment's `credentials.json`. |
 | `ENTITY_NOT_FOUND` | The name is wrong or the entity is not exposed. Claude reads the entity index and retries with the right name. |
 | `PROD_WRITE_NOT_ALLOWED` | A write on `prod` without `--allow-prod`. Approve the production write explicitly if you mean it. |
 | `HEADER_RESERVED` | `Cookie`, `Host` and `Content-Length` belong to the tool. |

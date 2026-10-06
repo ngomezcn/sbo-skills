@@ -18920,12 +18920,31 @@ function assertCredentials(value, env) {
     throw new SboError("CREDENTIALS_INVALID", `Credentials of "${env}" lack: ${missing.join(", ")}. Run the service-layer Setup again.`);
   }
 }
-async function configuredEnvironments(root) {
+async function environmentsWithCredentialsFile(root) {
   const found = [];
   for (const env of ENVIRONMENTS) {
     try {
       await readFile(credentialsPath(root, env));
       found.push(env);
+    } catch {
+    }
+  }
+  return found;
+}
+async function missingCredentialFields(root, env) {
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(credentialsPath(root, env), "utf8"));
+  } catch {
+    throw new SboError("CREDENTIALS_INVALID", `${LOCAL_DIR}/${SYSTEM}/${env}/credentials.json is not valid JSON. Fix the file, or run the service-layer Setup again.`);
+  }
+  return CREDENTIAL_FIELDS.filter((f) => typeof parsed?.[f] !== "string" || parsed[f].trim() === "");
+}
+async function configuredEnvironments(root) {
+  const found = [];
+  for (const env of await environmentsWithCredentialsFile(root)) {
+    try {
+      if ((await missingCredentialFields(root, env)).length === 0) found.push(env);
     } catch {
     }
   }

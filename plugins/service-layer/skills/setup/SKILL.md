@@ -1,37 +1,62 @@
 ---
 name: setup
-description: Set up or reset the connection to SAP Business One Service Layer for this repo - B1 version, OData version and the credentials of dev, uat or prod, with a login test. Use when the developer asks to configure, reconfigure or reset Service Layer, or when a Service Layer command fails with SETUP_MISSING or ENVIRONMENT_NOT_CONFIGURED. The developer types the credentials in their own terminal; this skill never handles them.
+description: Set up or reset the connection to SAP Business One Service Layer for this repo - B1 version, OData version and the dev, uat or prod environments, with a login test. Use when the developer asks to configure, reconfigure or reset Service Layer, or when a Service Layer command fails with SETUP_MISSING or ENVIRONMENT_NOT_CONFIGURED. Conversational; the developer types the user and the password into a file themselves, this skill never handles them.
 ---
 
 # Service Layer: setup
 
-The Setup is a script that asks the developer for everything and tests the login of each environment. **You do not run it and you never see the credentials**: URL, company, user and password are typed by the developer in their own terminal, so they never enter this conversation.
+A conversation, then two commands. You ask everything that is not secret in the chat; the **user name and the password** the developer types into a file in the repo. **You never see them**: do not ask for them, do not read the file.
 
-## Steps
+## 1. Look at the repo
 
-1. Tell the developer what the Setup will ask: the B1 version, the OData version (`v2` is preselected from FP 2405, `v1` before), and, for each of dev, uat and prod that they want, the Service Layer URL, company database, user and password. At least one environment. Each run erases the previous setup, with its data and object contexts, and starts from scratch. When the logins pass, the Setup also makes the entity index of each environment by itself, asking nothing; if it cannot, it prints a warning and the Setup still succeeds (the Uso makes the index on its next command).
-2. Ask them to open **their own terminal** in the root of this repo and run:
+Before asking, check what already exists, so you can propose instead of interrogate:
 
-   ```
-   node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs"
-   ```
+- `.sbo-skills/service-layer/` present: run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --status` (answers `versionB1`, `versionOData`, `environments`, never credentials). Tell the developer what is configured and that going on **erases it**, with its data and object contexts. Ask before continuing.
+- Nothing there: a fresh setup.
 
-   Give the developer the path already expanded (that is where this plugin is installed); the variable is only set inside Claude Code, not in their terminal.
+## 2. Ask, one section at a time
 
-   Do not run it yourself: it needs an interactive terminal (through your tools it stops with `NEEDS_TERMINAL`), and anything typed into it would pass through this conversation.
-3. Wait until the developer says it finished. Then run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --status`. It answers `ok`, `versionB1`, `versionOData` and the configured `environments`, never credentials. Compare with what the developer asked for: an environment whose login failed is not configured and is missing from the list; tell the developer to run the Setup again.
-4. If the developer says `.gitignore` could not be updated, ask them to add the line `.sbo-skills/` themselves: the folder holds passwords in plain text.
+Propose a default when there is one; let the developer correct it.
+
+1. **B1 version**, for example `FP 2608`. One outside the tested list is accepted with a warning.
+2. **OData version**: `v2` (OData V4) from FP 2405, `v1` (OData V3) before. Propose the one that fits the B1 version; the developer decides, also one the B1 version may not support.
+3. **Environments**: which of `dev`, `uat`, `prod` they want. At least one.
+4. For each: the **Service Layer URL** (for example `https://host:50000`) and the **company database**. Both are fine in the chat.
+
+## 3. Confirm, then initialise
+
+Show a short summary (B1, OData, and URL + company per environment) and ask for approval. Then run, one `--<env>-url`/`--<env>-company` pair per environment:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --init --b1 "FP 2608" --odata v2 --dev-url https://host:50000 --dev-company DB
+```
+
+It starts from scratch, writes `.sbo-skills/service-layer/config.md`, adds `.sbo-skills/` to `.gitignore`, and creates one `credentials.json` per environment with the URL and company filled in and `userName` and `password` **empty**. Its answer lists those files under `fillIn`.
+
+## 4. The developer fills in the secrets
+
+Tell the developer to open each file listed in `fillIn` in their editor and write `userName` and `password`, then save. Give the paths relative to the repo root. Wait until they say they are done. Do not open the files.
+
+If the answer has a warning about `.gitignore`, ask them to add the line `.sbo-skills/` themselves: the folder holds passwords in plain text.
+
+## 5. Verify
+
+Run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --verify`. It tests the login of every environment, discards the test session and makes the entity index. The answer has no credentials:
+
+- `verified`: logins that worked. `indexed`: environments with their index made (a failure there is a warning; the Uso makes it on its next command).
+- `pending`: environments whose file still has empty fields (it names the fields, not values). Ask the developer to finish them.
+- `failed`: environments whose login failed, with the Service Layer `code` and `message` (for example `-304` wrong user or password, `-306` unknown company, `SL_UNREACHABLE` bad URL). Say what it means. A wrong URL or company you can fix by running `--init` again with the right values (it starts over, so the developer fills the files in again); a wrong user or password the developer fixes in the file. Then `--verify` again.
+
+Done when `ok` is true. Tell the developer which environments are ready.
 
 ## Rules
 
-- Never ask the developer to paste a URL, user, password or any credential in the chat. If they paste one, do not repeat or store it, and tell them to run the Setup in their terminal instead.
-- Never read, print or edit `.sbo-skills/service-layer/*/credentials.json`.
-- Do not create `config.md` or `credentials.json` by hand, and do not use the non-interactive flags of the script (`--b1`, `--dev-url`, `SBO_SL_PASSWORD_*`): they put the password where this conversation can see it.
-- The B1 version outside the list is accepted with a warning ("not tested, it does not have to fail"). The OData version is the developer's choice, also one their B1 version may not support.
+- Never ask for, accept or repeat a user name or a password in the chat. If the developer pastes one, do not repeat or store it; tell them to type it into the file instead and consider it exposed.
+- Never read, print or edit `.sbo-skills/service-layer/*/credentials.json`, and never write `config.md` or `credentials.json` by hand.
 - Certificates are never validated (self-signed ones are the norm). The developer should work from a network they trust.
 
 ## Limits of this design
 
-- The developer opens a terminal and runs a command: one extra step, in exchange for the credentials never entering the AI context.
 - The password stays in plain text in `.sbo-skills/service-layer/<environment>/credentials.json` (ignored by git). Anyone who can read the repo folder can read it.
-- You cannot see why a login failed; the script shows the Service Layer error to the developer in their terminal.
+- URL and company pass through the conversation; only the user and the password stay out of it.
+- Keeping the secrets out of the AI context depends on this skill's rules: the files are readable by your tools, nothing technical prevents it.

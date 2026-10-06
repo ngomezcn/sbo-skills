@@ -11756,13 +11756,13 @@ var require_headers = __commonJS({
     var HeadersList = class _HeadersList {
       /** @type {[string, string][]|null} */
       cookies = null;
-      constructor(init) {
-        if (init instanceof _HeadersList) {
-          this[kHeadersMap] = new Map(init[kHeadersMap]);
-          this[kHeadersSortedMap] = init[kHeadersSortedMap];
-          this.cookies = init.cookies === null ? null : [...init.cookies];
+      constructor(init2) {
+        if (init2 instanceof _HeadersList) {
+          this[kHeadersMap] = new Map(init2[kHeadersMap]);
+          this[kHeadersSortedMap] = init2[kHeadersSortedMap];
+          this.cookies = init2.cookies === null ? null : [...init2.cookies];
         } else {
-          this[kHeadersMap] = new Map(init);
+          this[kHeadersMap] = new Map(init2);
           this[kHeadersSortedMap] = null;
         }
       }
@@ -11921,16 +11921,16 @@ var require_headers = __commonJS({
     var Headers = class _Headers {
       #guard;
       #headersList;
-      constructor(init = void 0) {
+      constructor(init2 = void 0) {
         webidl.util.markAsUncloneable(this);
-        if (init === kConstruct) {
+        if (init2 === kConstruct) {
           return;
         }
         this.#headersList = new HeadersList();
         this.#guard = "none";
-        if (init !== void 0) {
-          init = webidl.converters.HeadersInit(init, "Headers contructor", "init");
-          fill(this, init);
+        if (init2 !== void 0) {
+          init2 = webidl.converters.HeadersInit(init2, "Headers contructor", "init");
+          fill(this, init2);
         }
       }
       // https://fetch.spec.whatwg.org/#dom-headers-append
@@ -12161,17 +12161,17 @@ var require_response = __commonJS({
         return responseObject;
       }
       // https://fetch.spec.whatwg.org/#dom-response-json
-      static json(data, init = {}) {
+      static json(data, init2 = {}) {
         webidl.argumentLengthCheck(arguments, 1, "Response.json");
-        if (init !== null) {
-          init = webidl.converters.ResponseInit(init);
+        if (init2 !== null) {
+          init2 = webidl.converters.ResponseInit(init2);
         }
         const bytes = textEncoder.encode(
           serializeJavascriptValueToJSONString(data)
         );
         const body = extractBody(bytes);
         const responseObject = fromInnerResponse(makeResponse({}), "response");
-        initializeResponse(responseObject, init, { body: body[0], type: "application/json" });
+        initializeResponse(responseObject, init2, { body: body[0], type: "application/json" });
         return responseObject;
       }
       // Creates a redirect Response that redirects to url with status status.
@@ -12195,7 +12195,7 @@ var require_response = __commonJS({
         return responseObject;
       }
       // https://fetch.spec.whatwg.org/#dom-response
-      constructor(body = null, init = {}) {
+      constructor(body = null, init2 = {}) {
         webidl.util.markAsUncloneable(this);
         if (body === kConstruct) {
           return;
@@ -12203,7 +12203,7 @@ var require_response = __commonJS({
         if (body !== null) {
           body = webidl.converters.BodyInit(body);
         }
-        init = webidl.converters.ResponseInit(init);
+        init2 = webidl.converters.ResponseInit(init2);
         this[kState] = makeResponse({});
         this[kHeaders] = new Headers(kConstruct);
         setHeadersGuard(this[kHeaders], "response");
@@ -12213,7 +12213,7 @@ var require_response = __commonJS({
           const [extractedBody, type] = extractBody(body);
           bodyWithType = { body: extractedBody, type };
         }
-        initializeResponse(this, init, bodyWithType);
+        initializeResponse(this, init2, bodyWithType);
       }
       // Returns response’s type, e.g., "cors".
       get type() {
@@ -12332,7 +12332,7 @@ var require_response = __commonJS({
       }
       return newResponse;
     }
-    function makeResponse(init) {
+    function makeResponse(init2) {
       return {
         aborted: false,
         rangeRequested: false,
@@ -12343,9 +12343,9 @@ var require_response = __commonJS({
         timingInfo: null,
         cacheState: "",
         statusText: "",
-        ...init,
-        headersList: init?.headersList ? new HeadersList(init?.headersList) : new HeadersList(),
-        urlList: init?.urlList ? [...init.urlList] : []
+        ...init2,
+        headersList: init2?.headersList ? new HeadersList(init2?.headersList) : new HeadersList(),
+        urlList: init2?.urlList ? [...init2.urlList] : []
       };
     }
     function makeNetworkError(reason) {
@@ -12415,23 +12415,23 @@ var require_response = __commonJS({
       assert(isCancelled(fetchParams));
       return isAborted(fetchParams) ? makeNetworkError(Object.assign(new DOMException("The operation was aborted.", "AbortError"), { cause: err })) : makeNetworkError(Object.assign(new DOMException("Request was cancelled."), { cause: err }));
     }
-    function initializeResponse(response, init, body) {
-      if (init.status !== null && (init.status < 200 || init.status > 599)) {
+    function initializeResponse(response, init2, body) {
+      if (init2.status !== null && (init2.status < 200 || init2.status > 599)) {
         throw new RangeError('init["status"] must be in the range of 200 to 599, inclusive.');
       }
-      if ("statusText" in init && init.statusText != null) {
-        if (!isValidReasonPhrase(String(init.statusText))) {
+      if ("statusText" in init2 && init2.statusText != null) {
+        if (!isValidReasonPhrase(String(init2.statusText))) {
           throw new TypeError("Invalid statusText");
         }
       }
-      if ("status" in init && init.status != null) {
-        response[kState].status = init.status;
+      if ("status" in init2 && init2.status != null) {
+        response[kState].status = init2.status;
       }
-      if ("statusText" in init && init.statusText != null) {
-        response[kState].statusText = init.statusText;
+      if ("statusText" in init2 && init2.statusText != null) {
+        response[kState].statusText = init2.statusText;
       }
-      if ("headers" in init && init.headers != null) {
-        fill(response[kHeaders], init.headers);
+      if ("headers" in init2 && init2.headers != null) {
+        fill(response[kHeaders], init2.headers);
       }
       if (body) {
         if (nullBodyStatus.includes(response.status)) {
@@ -12627,7 +12627,7 @@ var require_request2 = __commonJS({
     var patchMethodWarning = false;
     var Request = class _Request {
       // https://fetch.spec.whatwg.org/#dom-request
-      constructor(input, init = {}) {
+      constructor(input, init2 = {}) {
         webidl.util.markAsUncloneable(this);
         if (input === kConstruct) {
           return;
@@ -12635,13 +12635,13 @@ var require_request2 = __commonJS({
         const prefix = "Request constructor";
         webidl.argumentLengthCheck(arguments, 1, prefix);
         input = webidl.converters.RequestInfo(input, prefix, "input");
-        init = webidl.converters.RequestInit(init, prefix, "init");
+        init2 = webidl.converters.RequestInit(init2, prefix, "init");
         let request2 = null;
         let fallbackMode = null;
         const baseUrl2 = environmentSettingsObject.settingsObject.baseUrl;
         let signal = null;
         if (typeof input === "string") {
-          this[kDispatcher] = init.dispatcher;
+          this[kDispatcher] = init2.dispatcher;
           let parsedURL;
           try {
             parsedURL = new URL(input, baseUrl2);
@@ -12656,7 +12656,7 @@ var require_request2 = __commonJS({
           request2 = makeRequest({ urlList: [parsedURL] });
           fallbackMode = "cors";
         } else {
-          this[kDispatcher] = init.dispatcher || input[kDispatcher];
+          this[kDispatcher] = init2.dispatcher || input[kDispatcher];
           assert(input instanceof _Request);
           request2 = input[kState];
           signal = input[kSignal];
@@ -12666,10 +12666,10 @@ var require_request2 = __commonJS({
         if (request2.window?.constructor?.name === "EnvironmentSettingsObject" && sameOrigin(request2.window, origin)) {
           window = request2.window;
         }
-        if (init.window != null) {
+        if (init2.window != null) {
           throw new TypeError(`'window' option '${window}' must be null`);
         }
-        if ("window" in init) {
+        if ("window" in init2) {
           window = "no-window";
         }
         request2 = makeRequest({
@@ -12715,7 +12715,7 @@ var require_request2 = __commonJS({
           // URL list A clone of request’s URL list.
           urlList: [...request2.urlList]
         });
-        const initHasKey = Object.keys(init).length !== 0;
+        const initHasKey = Object.keys(init2).length !== 0;
         if (initHasKey) {
           if (request2.mode === "navigate") {
             request2.mode = "same-origin";
@@ -12728,8 +12728,8 @@ var require_request2 = __commonJS({
           request2.url = request2.urlList[request2.urlList.length - 1];
           request2.urlList = [request2.url];
         }
-        if (init.referrer !== void 0) {
-          const referrer = init.referrer;
+        if (init2.referrer !== void 0) {
+          const referrer = init2.referrer;
           if (referrer === "") {
             request2.referrer = "no-referrer";
           } else {
@@ -12746,12 +12746,12 @@ var require_request2 = __commonJS({
             }
           }
         }
-        if (init.referrerPolicy !== void 0) {
-          request2.referrerPolicy = init.referrerPolicy;
+        if (init2.referrerPolicy !== void 0) {
+          request2.referrerPolicy = init2.referrerPolicy;
         }
         let mode;
-        if (init.mode !== void 0) {
-          mode = init.mode;
+        if (init2.mode !== void 0) {
+          mode = init2.mode;
         } else {
           mode = fallbackMode;
         }
@@ -12764,28 +12764,28 @@ var require_request2 = __commonJS({
         if (mode != null) {
           request2.mode = mode;
         }
-        if (init.credentials !== void 0) {
-          request2.credentials = init.credentials;
+        if (init2.credentials !== void 0) {
+          request2.credentials = init2.credentials;
         }
-        if (init.cache !== void 0) {
-          request2.cache = init.cache;
+        if (init2.cache !== void 0) {
+          request2.cache = init2.cache;
         }
         if (request2.cache === "only-if-cached" && request2.mode !== "same-origin") {
           throw new TypeError(
             "'only-if-cached' can be set only with 'same-origin' mode"
           );
         }
-        if (init.redirect !== void 0) {
-          request2.redirect = init.redirect;
+        if (init2.redirect !== void 0) {
+          request2.redirect = init2.redirect;
         }
-        if (init.integrity != null) {
-          request2.integrity = String(init.integrity);
+        if (init2.integrity != null) {
+          request2.integrity = String(init2.integrity);
         }
-        if (init.keepalive !== void 0) {
-          request2.keepalive = Boolean(init.keepalive);
+        if (init2.keepalive !== void 0) {
+          request2.keepalive = Boolean(init2.keepalive);
         }
-        if (init.method !== void 0) {
-          let method = init.method;
+        if (init2.method !== void 0) {
+          let method = init2.method;
           const mayBeNormalized = normalizedMethodRecords[method];
           if (mayBeNormalized !== void 0) {
             request2.method = mayBeNormalized;
@@ -12807,8 +12807,8 @@ var require_request2 = __commonJS({
             patchMethodWarning = true;
           }
         }
-        if (init.signal !== void 0) {
-          signal = init.signal;
+        if (init2.signal !== void 0) {
+          signal = init2.signal;
         }
         this[kState] = request2;
         const ac = new AbortController();
@@ -12850,7 +12850,7 @@ var require_request2 = __commonJS({
         }
         if (initHasKey) {
           const headersList = getHeadersList(this[kHeaders]);
-          const headers = init.headers !== void 0 ? init.headers : new HeadersList(headersList);
+          const headers = init2.headers !== void 0 ? init2.headers : new HeadersList(headersList);
           headersList.clear();
           if (headers instanceof HeadersList) {
             for (const { name, value } of headers.rawValues()) {
@@ -12862,13 +12862,13 @@ var require_request2 = __commonJS({
           }
         }
         const inputBody = input instanceof _Request ? input[kState].body : null;
-        if ((init.body != null || inputBody != null) && (request2.method === "GET" || request2.method === "HEAD")) {
+        if ((init2.body != null || inputBody != null) && (request2.method === "GET" || request2.method === "HEAD")) {
           throw new TypeError("Request with GET/HEAD method cannot have body.");
         }
         let initBody = null;
-        if (init.body != null) {
+        if (init2.body != null) {
           const [extractedBody, contentType] = extractBody(
-            init.body,
+            init2.body,
             request2.keepalive
           );
           initBody = extractedBody;
@@ -12878,7 +12878,7 @@ var require_request2 = __commonJS({
         }
         const inputOrInitBody = initBody ?? inputBody;
         if (inputOrInitBody != null && inputOrInitBody.source == null) {
-          if (initBody != null && init.duplex == null) {
+          if (initBody != null && init2.duplex == null) {
             throw new TypeError("RequestInit: duplex option is required when sending a body.");
           }
           if (request2.mode !== "same-origin" && request2.mode !== "cors") {
@@ -13073,46 +13073,46 @@ var require_request2 = __commonJS({
       }
     };
     mixinBody(Request);
-    function makeRequest(init) {
+    function makeRequest(init2) {
       return {
-        method: init.method ?? "GET",
-        localURLsOnly: init.localURLsOnly ?? false,
-        unsafeRequest: init.unsafeRequest ?? false,
-        body: init.body ?? null,
-        client: init.client ?? null,
-        reservedClient: init.reservedClient ?? null,
-        replacesClientId: init.replacesClientId ?? "",
-        window: init.window ?? "client",
-        keepalive: init.keepalive ?? false,
-        serviceWorkers: init.serviceWorkers ?? "all",
-        initiator: init.initiator ?? "",
-        destination: init.destination ?? "",
-        priority: init.priority ?? null,
-        origin: init.origin ?? "client",
-        policyContainer: init.policyContainer ?? "client",
-        referrer: init.referrer ?? "client",
-        referrerPolicy: init.referrerPolicy ?? "",
-        mode: init.mode ?? "no-cors",
-        useCORSPreflightFlag: init.useCORSPreflightFlag ?? false,
-        credentials: init.credentials ?? "same-origin",
-        useCredentials: init.useCredentials ?? false,
-        cache: init.cache ?? "default",
-        redirect: init.redirect ?? "follow",
-        integrity: init.integrity ?? "",
-        cryptoGraphicsNonceMetadata: init.cryptoGraphicsNonceMetadata ?? "",
-        parserMetadata: init.parserMetadata ?? "",
-        reloadNavigation: init.reloadNavigation ?? false,
-        historyNavigation: init.historyNavigation ?? false,
-        userActivation: init.userActivation ?? false,
-        taintedOrigin: init.taintedOrigin ?? false,
-        redirectCount: init.redirectCount ?? 0,
-        responseTainting: init.responseTainting ?? "basic",
-        preventNoCacheCacheControlHeaderModification: init.preventNoCacheCacheControlHeaderModification ?? false,
-        done: init.done ?? false,
-        timingAllowFailed: init.timingAllowFailed ?? false,
-        urlList: init.urlList,
-        url: init.urlList[0],
-        headersList: init.headersList ? new HeadersList(init.headersList) : new HeadersList()
+        method: init2.method ?? "GET",
+        localURLsOnly: init2.localURLsOnly ?? false,
+        unsafeRequest: init2.unsafeRequest ?? false,
+        body: init2.body ?? null,
+        client: init2.client ?? null,
+        reservedClient: init2.reservedClient ?? null,
+        replacesClientId: init2.replacesClientId ?? "",
+        window: init2.window ?? "client",
+        keepalive: init2.keepalive ?? false,
+        serviceWorkers: init2.serviceWorkers ?? "all",
+        initiator: init2.initiator ?? "",
+        destination: init2.destination ?? "",
+        priority: init2.priority ?? null,
+        origin: init2.origin ?? "client",
+        policyContainer: init2.policyContainer ?? "client",
+        referrer: init2.referrer ?? "client",
+        referrerPolicy: init2.referrerPolicy ?? "",
+        mode: init2.mode ?? "no-cors",
+        useCORSPreflightFlag: init2.useCORSPreflightFlag ?? false,
+        credentials: init2.credentials ?? "same-origin",
+        useCredentials: init2.useCredentials ?? false,
+        cache: init2.cache ?? "default",
+        redirect: init2.redirect ?? "follow",
+        integrity: init2.integrity ?? "",
+        cryptoGraphicsNonceMetadata: init2.cryptoGraphicsNonceMetadata ?? "",
+        parserMetadata: init2.parserMetadata ?? "",
+        reloadNavigation: init2.reloadNavigation ?? false,
+        historyNavigation: init2.historyNavigation ?? false,
+        userActivation: init2.userActivation ?? false,
+        taintedOrigin: init2.taintedOrigin ?? false,
+        redirectCount: init2.redirectCount ?? 0,
+        responseTainting: init2.responseTainting ?? "basic",
+        preventNoCacheCacheControlHeaderModification: init2.preventNoCacheCacheControlHeaderModification ?? false,
+        done: init2.done ?? false,
+        timingAllowFailed: init2.timingAllowFailed ?? false,
+        urlList: init2.urlList,
+        url: init2.urlList[0],
+        headersList: init2.headersList ? new HeadersList(init2.headersList) : new HeadersList()
       };
     }
     function cloneRequest(request2) {
@@ -13361,12 +13361,12 @@ var require_fetch = __commonJS({
     function handleFetchDone(response) {
       finalizeAndReportTiming(response, "fetch");
     }
-    function fetch(input, init = void 0) {
+    function fetch(input, init2 = void 0) {
       webidl.argumentLengthCheck(arguments, 1, "globalThis.fetch");
       let p = createDeferredPromise();
       let requestObject;
       try {
-        requestObject = new Request(input, init);
+        requestObject = new Request(input, init2);
       } catch (e) {
         p.reject(e);
         return p.promise;
@@ -16380,9 +16380,9 @@ var require_events = __commonJS({
           ports
         });
       }
-      static createFastMessageEvent(type, init) {
-        const messageEvent = new _MessageEvent(kConstruct, type, init);
-        messageEvent.#eventInit = init;
+      static createFastMessageEvent(type, init2) {
+        const messageEvent = new _MessageEvent(kConstruct, type, init2);
+        messageEvent.#eventInit = init2;
         messageEvent.#eventInit.data ??= null;
         messageEvent.#eventInit.origin ??= "";
         messageEvent.#eventInit.lastEventId ??= "";
@@ -16681,7 +16681,7 @@ var require_util7 = __commonJS({
     function isClosed(ws) {
       return ws[kReadyState] === states.CLOSED;
     }
-    function fireEvent(e, target, eventFactory = (type, init) => new Event(type, init), eventInitDict = {}) {
+    function fireEvent(e, target, eventFactory = (type, init2) => new Event(type, init2), eventInitDict = {}) {
       const event = eventFactory(e, eventInitDict);
       target.dispatchEvent(event);
     }
@@ -16759,7 +16759,7 @@ var require_util7 = __commonJS({
         response.socket.destroy();
       }
       if (reason) {
-        fireEvent("error", ws, (type, init) => new ErrorEvent(type, init), {
+        fireEvent("error", ws, (type, init2) => new ErrorEvent(type, init2), {
           error: new Error(reason),
           message: reason
         });
@@ -17067,7 +17067,7 @@ var require_connection = __commonJS({
         code = 1006;
       }
       ws[kReadyState] = states.CLOSED;
-      fireEvent("close", ws, (type, init) => new CloseEvent(type, init), {
+      fireEvent("close", ws, (type, init2) => new CloseEvent(type, init2), {
         wasClean,
         code,
         reason
@@ -17181,7 +17181,7 @@ var require_permessage_deflate = __commonJS({
 var require_receiver = __commonJS({
   "node_modules/undici/lib/web/websocket/receiver.js"(exports, module) {
     "use strict";
-    var { Writable: Writable3 } = __require("node:stream");
+    var { Writable } = __require("node:stream");
     var assert = __require("node:assert");
     var { parserStates, opcodes, states, emptyBuffer, sentCloseFrameState } = require_constants5();
     var { kReadyState, kSentClose, kResponse, kReceivedClose } = require_symbols5();
@@ -17204,7 +17204,7 @@ var require_receiver = __commonJS({
       closeWebSocketConnection(ws, code, reason, Buffer.byteLength(reason));
       failWebsocketConnection(ws, reason);
     }
-    var ByteParser = class extends Writable3 {
+    var ByteParser = class extends Writable {
       #buffers = [];
       #fragmentsBytes = 0;
       #byteOffset = 0;
@@ -18778,9 +18778,9 @@ var require_undici = __commonJS({
     module.exports.setGlobalDispatcher = setGlobalDispatcher;
     module.exports.getGlobalDispatcher = getGlobalDispatcher;
     var fetchImpl = require_fetch().fetch;
-    module.exports.fetch = async function fetch(init, options = void 0) {
+    module.exports.fetch = async function fetch(init2, options = void 0) {
       try {
-        return await fetchImpl(init, options);
+        return await fetchImpl(init2, options);
       } catch (err) {
         if (err && typeof err === "object") {
           Error.captureStackTrace(err);
@@ -18829,8 +18829,6 @@ var require_undici = __commonJS({
 
 // src/setup/command.ts
 import { parseArgs } from "node:util";
-import { createInterface as createInterface2 } from "node:readline";
-import { Writable as Writable2 } from "node:stream";
 
 // src/common/errors.ts
 var SboError = class extends Error {
@@ -18841,6 +18839,10 @@ var SboError = class extends Error {
   }
   code;
 };
+
+// src/common/layout.ts
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
 // src/common/versions.ts
 var SUPPORTED_B1_VERSIONS = [
@@ -18886,8 +18888,6 @@ function checkODataVersion(input) {
 }
 
 // src/common/layout.ts
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 var SYSTEM = "service-layer";
 var LOCAL_DIR = ".sbo-skills";
 var systemDir = (root) => join(root, LOCAL_DIR, SYSTEM);
@@ -18955,12 +18955,34 @@ function assertCredentials(value, env) {
     throw new SboError("CREDENTIALS_INVALID", `Credentials of "${env}" lack: ${missing.join(", ")}. Run the service-layer Setup again.`);
   }
 }
-async function configuredEnvironments(root) {
+async function writeCredentialsTemplate(root, env, known) {
+  await writeCredentials(root, env, { url: known.url, companyDB: known.companyDB, userName: "", password: "" });
+}
+async function environmentsWithCredentialsFile(root) {
   const found = [];
   for (const env of ENVIRONMENTS) {
     try {
       await readFile(credentialsPath(root, env));
       found.push(env);
+    } catch {
+    }
+  }
+  return found;
+}
+async function missingCredentialFields(root, env) {
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(credentialsPath(root, env), "utf8"));
+  } catch {
+    throw new SboError("CREDENTIALS_INVALID", `${LOCAL_DIR}/${SYSTEM}/${env}/credentials.json is not valid JSON. Fix the file, or run the service-layer Setup again.`);
+  }
+  return CREDENTIAL_FIELDS.filter((f) => typeof parsed?.[f] !== "string" || parsed[f].trim() === "");
+}
+async function configuredEnvironments(root) {
+  const found = [];
+  for (const env of await environmentsWithCredentialsFile(root)) {
+    try {
+      if ((await missingCredentialFields(root, env)).length === 0) found.push(env);
     } catch {
     }
   }
@@ -18981,14 +19003,12 @@ async function ensureGitignore(root) {
   const covered = [entry, LOCAL_DIR, `/${entry}`, `/${LOCAL_DIR}`, `${entry}*`, `/${entry}*`];
   if (lines.some((l) => covered.includes(l))) return;
   const eol = current.includes("\r\n") ? "\r\n" : "\n";
-  const sep = current === "" || current.endsWith("\n") ? "" : eol;
-  await writeFile(file, `${current}${sep}${entry}${eol}`);
+  const sep2 = current === "" || current.endsWith("\n") ? "" : eol;
+  await writeFile(file, `${current}${sep2}${entry}${eol}`);
 }
 
-// src/setup/wizard.ts
-import { existsSync } from "node:fs";
-import { createInterface } from "node:readline";
-import { Writable } from "node:stream";
+// src/setup/setup.ts
+import { relative as relative2, sep } from "node:path";
 
 // src/common/sl.ts
 var import_undici = __toESM(require_undici(), 1);
@@ -19467,30 +19487,6 @@ async function openUse(options, { sweep = true, index = true } = {}) {
 }
 
 // src/setup/setup.ts
-function checkInput(options, names) {
-  if (names.length === 0) throw new SboError("NO_ENVIRONMENTS", "Configure at least one environment (dev, uat or prod).");
-  for (const name of names) {
-    if (!isEnvironment(name)) throw new SboError("INVALID_ENVIRONMENT", `"${name}" is not an environment. Use dev, uat or prod.`);
-  }
-  for (const name of names) assertCredentials(options.environments[name], name);
-}
-async function writeSetup(options) {
-  const names = Object.keys(options.environments);
-  checkInput(options, names);
-  const { version, warnings } = checkB1Version(options.versionB1);
-  const versionOData = checkODataVersion(options.versionOData);
-  await clearLocalState(options.root);
-  await writeConfig(options.root, { versionB1: version, versionOData });
-  for (const name of names) await writeCredentials(options.root, name, options.environments[name]);
-  try {
-    await ensureGitignore(options.root);
-  } catch (e) {
-    warnings.push(
-      `Could not add .sbo-skills/ to .gitignore (${e.message}). Add the line ".sbo-skills/" yourself before committing: the folder holds passwords in plain text.`
-    );
-  }
-  return { environments: names, warnings };
-}
 async function testLogin(environment, credentials, versionOData, transport = defaultTransport) {
   try {
     const session = await login(credentials, versionOData, transport);
@@ -19506,32 +19502,60 @@ async function testLogin(environment, credentials, versionOData, transport = def
     throw e;
   }
 }
-async function runSetup(options) {
-  const transport = options.transport ?? defaultTransport;
+async function initSetup(options) {
   const names = Object.keys(options.environments);
-  checkInput(options, names);
-  const versionOData = checkODataVersion(options.versionOData);
-  const { warnings } = checkB1Version(options.versionB1);
-  await clearLocalState(options.root);
-  const good = {};
-  const failed = [];
+  if (names.length === 0) throw new SboError("NO_ENVIRONMENTS", "Configure at least one environment (dev, uat or prod).");
   for (const name of names) {
-    const credentials = options.environments[name];
-    const tested = await testLogin(name, credentials, versionOData, transport);
+    if (!isEnvironment(name)) throw new SboError("INVALID_ENVIRONMENT", `"${name}" is not an environment. Use dev, uat or prod.`);
+    const known = options.environments[name] ?? {};
+    const empty = ["url", "companyDB"].filter((f) => typeof known[f] !== "string" || known[f] === "");
+    if (empty.length > 0) throw new SboError("CREDENTIALS_INVALID", `Environment "${name}" lacks: ${empty.join(", ")}.`);
+  }
+  const { version, warnings } = checkB1Version(options.versionB1);
+  const versionOData = checkODataVersion(options.versionOData);
+  await clearLocalState(options.root);
+  await writeConfig(options.root, { versionB1: version, versionOData });
+  const files = [];
+  for (const name of names) {
+    await writeCredentialsTemplate(options.root, name, options.environments[name]);
+    files.push(relative2(options.root, credentialsPath(options.root, name)).split(sep).join("/"));
+  }
+  try {
+    await ensureGitignore(options.root);
+  } catch (e) {
+    warnings.push(
+      `Could not add .sbo-skills/ to .gitignore (${e.message}). Add the line ".sbo-skills/" yourself before committing: the folder holds passwords in plain text.`
+    );
+  }
+  return { environments: names, files, warnings };
+}
+async function verifySetup(options) {
+  const transport = options.transport ?? defaultTransport;
+  const config = await readConfig(options.root);
+  const names = await environmentsWithCredentialsFile(options.root);
+  if (names.length === 0) throw new SboError("SETUP_MISSING", "No environment was initialised. Run the service-layer Setup first.");
+  const warnings = [];
+  const pending = [];
+  const failed = [];
+  const good = [];
+  for (const name of names) {
+    const missing = await missingCredentialFields(options.root, name);
+    if (missing.length > 0) {
+      pending.push({ environment: name, missing });
+      continue;
+    }
+    const tested = await testLogin(name, await readCredentials(options.root, name), config.versionOData, transport);
     if (tested.failure) failed.push(tested.failure);
-    else good[name] = credentials;
+    else good.push(name);
     if (tested.warning) warnings.push(tested.warning);
   }
-  if (Object.keys(good).length === 0) return { ok: false, environments: [], warnings, failed, indexed: [] };
-  const written = await writeSetup({ ...options, environments: good });
-  for (const w of written.warnings) if (!warnings.includes(w)) warnings.push(w);
   const indexed = [];
-  for (const name of written.environments) {
+  for (const name of good) {
     const error = await makeIndex(options.root, name, transport);
     if (error === null) indexed.push(name);
     else warnings.push(`The entity index of "${name}" could not be made (${error}). The Uso makes it on its next command.`);
   }
-  return { ok: failed.length === 0, environments: written.environments, warnings, failed, indexed };
+  return { ok: pending.length === 0 && failed.length === 0, environments: good, pending, failed, indexed, warnings };
 }
 async function makeIndex(root, environment, transport) {
   try {
@@ -19549,196 +19573,54 @@ async function makeIndex(root, environment, transport) {
   }
 }
 
-// src/setup/wizard.ts
-var INPUT_CLOSED = "The input ended before the Setup was complete. Run the Setup again.";
-function createAsk(input, output2) {
-  let muted = false;
-  const quiet = new Writable({ write: (chunk, _enc, done) => (muted || output2.write(chunk), done()) });
-  const rl = createInterface({ input, output: quiet, terminal: Boolean(input.isTTY) });
-  const lines = [];
-  let waiter = null;
-  let closed = false;
-  rl.on("line", (line) => {
-    if (waiter) {
-      const w = waiter;
-      waiter = null;
-      w.resolve(line);
-    } else lines.push(line);
-  });
-  rl.on("close", () => {
-    closed = true;
-    waiter?.reject(new SboError("INPUT_CLOSED", INPUT_CLOSED));
-  });
-  const ask = (prompt, options) => {
-    rl.setPrompt(prompt);
-    rl.prompt();
-    muted = Boolean(options?.secret);
-    return new Promise((resolve2, reject) => {
-      const done = (line) => {
-        muted = false;
-        if (options?.secret) output2.write("\n");
-        resolve2(options?.secret ? line : line.trim());
-      };
-      const queued = lines.shift();
-      if (queued !== void 0) return done(queued);
-      if (closed) return reject(new SboError("INPUT_CLOSED", INPUT_CLOSED));
-      waiter = { resolve: done, reject };
-    });
-  };
-  ask.close = () => rl.close();
-  return ask;
-}
-var yes = (answer) => /^y(es)?$/i.test(answer.trim());
-async function runWizard({ root, ask, say, transport }) {
-  const warnings = [];
-  if (existsSync(systemDir(root))) {
-    const answer = await ask(`A setup already exists in ${LOCAL_DIR}/${SYSTEM}/. This run erases it, with the data and the object contexts of every environment, and starts from scratch. Continue? [y/N]: `);
-    if (!yes(answer)) {
-      say("Nothing was changed.");
-      return { ok: false, aborted: true, environments: [], failed: [], warnings };
-    }
-  }
-  let versionB1;
-  for (; ; ) {
-    const answer = await ask(`B1 version (${SUPPORTED_B1_VERSIONS.join(", ")}): `);
-    try {
-      const checked = checkB1Version(answer);
-      versionB1 = checked.version;
-      for (const w of checked.warnings) {
-        say(`Warning: ${w}`);
-        warnings.push(w);
-      }
-      break;
-    } catch (e) {
-      if (!(e instanceof SboError)) throw e;
-      say(e.message);
-    }
-  }
-  const preselected = defaultODataVersion(versionB1);
-  let versionOData;
-  for (; ; ) {
-    const answer = await ask(`OData version: v1 (OData V3) or v2 (OData V4) [${preselected}]: `) || preselected;
-    try {
-      versionOData = checkODataVersion(answer.toLowerCase());
-      break;
-    } catch (e) {
-      say(e.message);
-    }
-  }
-  const good = {};
-  const failed = [];
-  const failures = /* @__PURE__ */ new Map();
-  const skipped = [];
-  let chosen = 0;
-  while (chosen === 0) {
-    for (const env of ENVIRONMENTS) {
-      if (!yes(await ask(`Configure ${env}? [y/N]: `))) continue;
-      chosen++;
-      for (; ; ) {
-        const url = await ask(`${env} - Service Layer URL (for example https://host:50000): `);
-        const companyDB = await ask(`${env} - company database: `);
-        const userName = await ask(`${env} - user: `);
-        const password = await ask(`${env} - password (not shown): `, { secret: true });
-        const credentials = { url, companyDB, userName, password };
-        const missing = ["url", "companyDB", "userName", "password"].filter((f) => credentials[f] === "");
-        const tested = missing.length > 0 ? null : await testLogin(env, credentials, versionOData, transport);
-        if (tested && !tested.failure) {
-          good[env] = credentials;
-          say(`${env}: login OK`);
-          break;
-        }
-        say(`${env}: login failed: ${tested?.failure ? `${tested.failure.code ?? ""} ${tested.failure.message}`.trim() : `${missing.join(", ")} cannot be empty`}`);
-        if (tested?.failure) failed.push(tested.failure);
-        failures.set(env, tested?.failure);
-        const next = await ask(`Answer ${env} again (r) or skip ${env} (s)? [r/s]: `);
-        if (!/^r/i.test(next)) {
-          say(`${env}: not configured`);
-          skipped.push(env);
-          break;
-        }
-      }
-    }
-    if (chosen === 0) say("Configure at least one environment.");
-  }
-  if (Object.keys(good).length === 0) {
-    await clearLocalState(root);
-    say("Setup failed: no environment could log in, so nothing is configured.");
-    return { ok: false, environments: [], failed: [...failures.values()].filter((f) => f !== void 0), warnings };
-  }
-  const result = await runSetup({ root, versionB1, versionOData, environments: good, transport });
-  for (const w of result.warnings) if (!warnings.includes(w)) warnings.push(w);
-  for (const w of warnings) if (/gitignore|entity index/i.test(w)) say(`Warning: ${w}`);
-  if (result.indexed.length > 0) say(`Entity index made for: ${result.indexed.join(", ")}.`);
-  for (const f of result.failed) say(`${f.environment}: not configured (${f.code ?? ""} ${f.message})`);
-  const left = [...[...failures].filter(([env]) => !good[env]).map(([, f]) => f), ...result.failed].filter((f) => f !== void 0);
-  if (result.environments.length === 0) {
-    say("Setup failed: the logins that worked a moment ago failed on the final check, so nothing is configured. Run the Setup again.");
-  } else {
-    say(`Setup done: ${result.environments.join(", ")} configured (B1 ${versionB1}, OData ${versionOData}).`);
-  }
-  return { ok: result.ok && skipped.length === 0, environments: result.environments, failed: left, warnings };
-}
-
 // src/setup/command.ts
-async function askPassword(environment) {
-  const muted = new Writable2({ write: (_chunk, _enc, done) => done() });
-  process.stderr.write(`Password for ${environment}: `);
-  const rl = createInterface2({ input: process.stdin, output: muted, terminal: true });
-  return new Promise(
-    (resolve2) => rl.question("", (answer) => {
-      rl.close();
-      process.stderr.write("\n");
-      resolve2(answer);
-    })
-  );
-}
-async function wizard(root) {
-  if (!process.stdin.isTTY) {
-    throw new SboError("NEEDS_TERMINAL", "The Setup asks for credentials and must run in the developer's own terminal, not through the AI: open a terminal in the repo root and run this same command there.");
-  }
-  const ask = createAsk(process.stdin, process.stdout);
-  try {
-    const result = await runWizard({ root, ask, say: (line) => console.log(line) });
-    return { output: void 0, exitCode: result.ok ? 0 : 1 };
-  } finally {
-    ask.close();
-  }
-}
 async function status(root) {
   const environments = await configuredEnvironments(root);
   if (environments.length === 0) throw new SboError("SETUP_MISSING", "No environment is configured. Run the service-layer Setup.");
   const config = await readConfig(root);
   return { output: { ok: true, versionB1: config.versionB1, versionOData: config.versionOData, environments }, exitCode: 0 };
 }
-async function main(argv, env, root) {
-  const options = { b1: { type: "string" }, odata: { type: "string" }, status: { type: "boolean" } };
-  for (const e of ENVIRONMENTS) for (const f of ["url", "company", "user"]) options[`${e}-${f}`] = { type: "string" };
+async function verify(root) {
+  const r = await verifySetup({ root });
+  return { output: { ok: r.ok, verified: r.environments, indexed: r.indexed, pending: r.pending, failed: r.failed, warnings: r.warnings }, exitCode: r.ok ? 0 : 1 };
+}
+async function init(root, values) {
+  const b1 = values.b1;
+  if (!b1) throw new SboError("MISSING_ARGUMENT", 'Pass --b1 with the B1 version, for example --b1 "FP 2608".');
+  const environments = {};
+  for (const e of ENVIRONMENTS) {
+    const [url, companyDB] = ["url", "company"].map((f) => values[`${e}-${f}`]);
+    if (!url && !companyDB) continue;
+    if (!url || !companyDB) throw new SboError("MISSING_ARGUMENT", `Environment ${e} needs --${e}-url and --${e}-company.`);
+    environments[e] = { url, companyDB };
+  }
+  const result = await initSetup({ root, versionB1: b1, versionOData: values.odata ?? defaultODataVersion(b1), environments });
+  return {
+    output: {
+      ok: true,
+      initialised: result.environments,
+      fillIn: result.files.map((file) => ({ file, fields: ["userName", "password"] })),
+      warnings: result.warnings,
+      next: "The developer fills in userName and password in each file, then --verify runs."
+    },
+    exitCode: 0
+  };
+}
+async function main(argv, _env, root) {
+  const options = {
+    b1: { type: "string" },
+    odata: { type: "string" },
+    init: { type: "boolean" },
+    verify: { type: "boolean" },
+    status: { type: "boolean" }
+  };
+  for (const e of ENVIRONMENTS) for (const f of ["url", "company"]) options[`${e}-${f}`] = { type: "string" };
   try {
     const { values } = parseArgs({ args: argv, options });
     if (values.status) return await status(root);
-    if (argv.length === 0) return await wizard(root);
-    const b1 = values.b1;
-    if (!b1) throw new SboError("MISSING_ARGUMENT", 'Pass --b1 with the B1 version, for example --b1 "FP 2608".');
-    const environments = {};
-    for (const e of ENVIRONMENTS) {
-      if (!values[`${e}-url`] && !values[`${e}-company`] && !values[`${e}-user`]) continue;
-      const [url, companyDB, userName] = ["url", "company", "user"].map((f) => values[`${e}-${f}`]);
-      if (!url || !companyDB || !userName) {
-        throw new SboError("MISSING_ARGUMENT", `Environment ${e} needs --${e}-url, --${e}-company and --${e}-user.`);
-      }
-      const password = env[`SBO_SL_PASSWORD_${e.toUpperCase()}`] ?? await askPassword(e);
-      environments[e] = { url, companyDB, userName, password };
-    }
-    const result = await runSetup({
-      root,
-      versionB1: b1,
-      versionOData: values.odata ?? defaultODataVersion(b1),
-      environments
-    });
-    return {
-      output: { ok: result.ok, configured: result.environments, indexed: result.indexed, failed: result.failed, warnings: result.warnings },
-      exitCode: result.ok ? 0 : 1
-    };
+    if (values.verify) return await verify(root);
+    if (values.init) return await init(root, values);
+    throw new SboError("MISSING_ARGUMENT", "Pass --init, --verify or --status.");
   } catch (e) {
     if (e instanceof SboError) return { output: { ok: false, error: { code: e.code, message: e.message } }, exitCode: 1 };
     if (e.code?.startsWith("ERR_PARSE_ARGS")) {

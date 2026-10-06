@@ -9,18 +9,18 @@ Este repo es solo el producto instalable. La fabrica (fuentes, scripts, skills d
 Cada sistema es un unico plugin, que se instala completo y tiene tres partes:
 
 - `service-layer`
-  - **setup** (skill `setup`): el desarrollador ejecuta un script en su propio terminal que le pregunta la version de B1, la version de OData y las credenciales de dev, uat o prod, y prueba el login. Las credenciales no pasan por la IA.
+  - **setup** (skill `setup`): conversacion con Claude para elegir la version de B1, la version de OData, los entornos (dev, uat, prod) y la URL y company de cada uno. El usuario y el password los escribe el desarrollador en un archivo del repo, no en el chat. Despues prueba el login.
   - **use** (skill `use`): lee y escribe contra el Service Layer real. Las escrituras son en seco hasta que se repite la llamada con `--execute`.
   - **docs** (skill `docs`): documentacion unica para todas las versiones de B1. Exige el Setup hecho (lee `.sbo-skills/service-layer/config.md`).
 
-Requisitos: Node 20 o superior. El plugin guarda sus datos locales en `.sbo-skills/service-layer/` del repo del desarrollador (el Setup lo anade a `.gitignore`).
+Requisitos: Claude Code y Node 20 o superior. Por ahora solo se da soporte a Claude Code. El plugin guarda sus datos locales en `.sbo-skills/service-layer/` del repo del desarrollador (el Setup lo anade a `.gitignore`).
 
 ## Instalacion
 
     /plugin marketplace add ngomezcn/sbo-skills
     /plugin install service-layer@sbo-skills
 
-Despues, pide a Claude que configure Service Layer (skill `setup`).
+Despues, abre Claude Code en tu repo y pidele que configure Service Layer (skill `setup`).
 
 ## No se edita a mano
 
