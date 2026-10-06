@@ -1,6 +1,6 @@
 {
   "name": "service-layer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SAP Business One Service Layer: Setup (credentials, B1 and OData version), Uso (read and write against a real system, writes in seco by default) and Documentacion, in one plugin.",
   "author": { "name": "ngomez" }
 }

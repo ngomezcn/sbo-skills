@@ -9,7 +9,7 @@ Este repo es solo el producto instalable. La fabrica (fuentes, scripts, skills d
 Cada sistema es un unico plugin, que se instala completo y tiene tres partes:
 
 - `service-layer`
-  - **setup** (skill `setup`): conversacion con Claude para elegir la version de B1, la version de OData, los entornos (dev, uat, prod) y la URL y company de cada uno. El usuario y el password los escribe el desarrollador en un archivo del repo, no en el chat. Despues prueba el login.
+  - **setup** (skill `setup`): conversacion con Claude para elegir la version de B1, la version de OData, los entornos (dev, uat, prod), una pregunta cada vez. La URL, la company, el usuario y el password los escribe el desarrollador en un archivo del repo, no en el chat. Despues se puede anadir otro entorno con `--add-env`. Despues prueba el login.
   - **use** (skill `use`): lee y escribe contra el Service Layer real. Las escrituras son en seco hasta que se repite la llamada con `--execute`.
   - **docs** (skill `docs`): documentacion unica para todas las versiones de B1. Exige el Setup hecho (lee `.sbo-skills/service-layer/config.md`).
 
