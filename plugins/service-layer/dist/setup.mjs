@@ -18955,8 +18955,8 @@ function assertCredentials(value, env) {
     throw new SboError("CREDENTIALS_INVALID", `Credentials of "${env}" lack: ${missing.join(", ")}. Run the service-layer Setup again.`);
   }
 }
-async function writeCredentialsTemplate(root, env, known) {
-  await writeCredentials(root, env, { url: known.url, companyDB: known.companyDB, userName: "", password: "" });
+async function writeCredentialsTemplate(root, env) {
+  await writeCredentials(root, env, { url: "", companyDB: "", userName: "", password: "" });
 }
 async function environmentsWithCredentialsFile(root) {
   const found = [];
@@ -19503,13 +19503,10 @@ async function testLogin(environment, credentials, versionOData, transport = def
   }
 }
 async function initSetup(options) {
-  const names = Object.keys(options.environments);
+  const names = [...new Set(options.environments)];
   if (names.length === 0) throw new SboError("NO_ENVIRONMENTS", "Configure at least one environment (dev, uat or prod).");
   for (const name of names) {
     if (!isEnvironment(name)) throw new SboError("INVALID_ENVIRONMENT", `"${name}" is not an environment. Use dev, uat or prod.`);
-    const known = options.environments[name] ?? {};
-    const empty = ["url", "companyDB"].filter((f) => typeof known[f] !== "string" || known[f] === "");
-    if (empty.length > 0) throw new SboError("CREDENTIALS_INVALID", `Environment "${name}" lacks: ${empty.join(", ")}.`);
   }
   const { version, warnings } = checkB1Version(options.versionB1);
   const versionOData = checkODataVersion(options.versionOData);
@@ -19517,7 +19514,7 @@ async function initSetup(options) {
   await writeConfig(options.root, { versionB1: version, versionOData });
   const files = [];
   for (const name of names) {
-    await writeCredentialsTemplate(options.root, name, options.environments[name]);
+    await writeCredentialsTemplate(options.root, name);
     files.push(relative2(options.root, credentialsPath(options.root, name)).split(sep).join("/"));
   }
   try {
@@ -19528,6 +19525,16 @@ async function initSetup(options) {
     );
   }
   return { environments: names, files, warnings };
+}
+async function addEnvironment(options) {
+  const name = options.environment;
+  if (!isEnvironment(name)) throw new SboError("INVALID_ENVIRONMENT", `"${name}" is not an environment. Use dev, uat or prod.`);
+  await readConfig(options.root);
+  if ((await environmentsWithCredentialsFile(options.root)).includes(name)) {
+    throw new SboError("ENVIRONMENT_EXISTS", `Environment "${name}" already exists. Edit its credentials.json, or run --init to start over.`);
+  }
+  await writeCredentialsTemplate(options.root, name);
+  return { environment: name, file: relative2(options.root, credentialsPath(options.root, name)).split(sep).join("/") };
 }
 async function verifySetup(options) {
   const transport = options.transport ?? defaultTransport;
@@ -19584,24 +19591,32 @@ async function verify(root) {
   const r = await verifySetup({ root });
   return { output: { ok: r.ok, verified: r.environments, indexed: r.indexed, pending: r.pending, failed: r.failed, warnings: r.warnings }, exitCode: r.ok ? 0 : 1 };
 }
+async function addEnv(root, environment) {
+  const r = await addEnvironment({ root, environment });
+  return {
+    output: {
+      ok: true,
+      initialised: [r.environment],
+      fillIn: [{ file: r.file, fields: ["url", "companyDB", "userName", "password"] }],
+      next: "The developer fills in url, companyDB, userName and password in the file, then --verify runs."
+    },
+    exitCode: 0
+  };
+}
 async function init(root, values) {
   const b1 = values.b1;
   if (!b1) throw new SboError("MISSING_ARGUMENT", 'Pass --b1 with the B1 version, for example --b1 "FP 2608".');
-  const environments = {};
-  for (const e of ENVIRONMENTS) {
-    const [url, companyDB] = ["url", "company"].map((f) => values[`${e}-${f}`]);
-    if (!url && !companyDB) continue;
-    if (!url || !companyDB) throw new SboError("MISSING_ARGUMENT", `Environment ${e} needs --${e}-url and --${e}-company.`);
-    environments[e] = { url, companyDB };
-  }
+  const envs = values.envs;
+  if (!envs) throw new SboError("MISSING_ARGUMENT", "Pass --envs with the environments, for example --envs dev,uat.");
+  const environments = envs.split(",").map((e) => e.trim()).filter(Boolean);
   const result = await initSetup({ root, versionB1: b1, versionOData: values.odata ?? defaultODataVersion(b1), environments });
   return {
     output: {
       ok: true,
       initialised: result.environments,
-      fillIn: result.files.map((file) => ({ file, fields: ["userName", "password"] })),
+      fillIn: result.files.map((file) => ({ file, fields: ["url", "companyDB", "userName", "password"] })),
       warnings: result.warnings,
-      next: "The developer fills in userName and password in each file, then --verify runs."
+      next: "The developer fills in url, companyDB, userName and password in each file, then --verify runs."
     },
     exitCode: 0
   };
@@ -19610,17 +19625,19 @@ async function main(argv, _env, root) {
   const options = {
     b1: { type: "string" },
     odata: { type: "string" },
+    envs: { type: "string" },
+    "add-env": { type: "string" },
     init: { type: "boolean" },
     verify: { type: "boolean" },
     status: { type: "boolean" }
   };
-  for (const e of ENVIRONMENTS) for (const f of ["url", "company"]) options[`${e}-${f}`] = { type: "string" };
   try {
     const { values } = parseArgs({ args: argv, options });
     if (values.status) return await status(root);
     if (values.verify) return await verify(root);
+    if (values["add-env"]) return await addEnv(root, values["add-env"]);
     if (values.init) return await init(root, values);
-    throw new SboError("MISSING_ARGUMENT", "Pass --init, --verify or --status.");
+    throw new SboError("MISSING_ARGUMENT", "Pass --init, --add-env, --verify or --status.");
   } catch (e) {
     if (e instanceof SboError) return { output: { ok: false, error: { code: e.code, message: e.message } }, exitCode: 1 };
     if (e.code?.startsWith("ERR_PARSE_ARGS")) {
