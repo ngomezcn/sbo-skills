@@ -20,7 +20,7 @@ Ask one question, wait for the answer, then ask the next. Never put two question
 
 1. **SAP Business One version.** Show the whole tested list, not only an example: `FP 2208`, `FP 2305`, `SP 2308`, `SP 2311`, `SP 2402`, `FP 2405`, `SP 2408`, `SP 2411`, `FP 2502`, `SP 2505`, `FP 2508`, `SP 2511`, `FP 2602`, `SP 2605`, `FP 2608`. One outside the list is accepted with a warning.
 2. **OData version.** Say that `v2` (OData V4) will be used by default and that they only have to answer "ok" if that suits them. If their version is older than `FP 2405`, propose `v1` (OData V3) instead. The developer may pick the other one.
-3. **Environments.** Recommend starting with `dev` only. Tell them they can add another environment whenever they want by running `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --add-env uat` (or `prod`), which keeps what is already configured. Then ask which of `dev`, `uat` and `prod` they want now. At least one.
+3. **Environments.** Recommend starting with `dev` only. Tell them they can add another environment whenever they want with `/service-layer:add-environment`, which keeps what is already configured. Then ask which of `dev`, `uat` and `prod` they want now. At least one.
 
 ## 3. Initialise
 
@@ -42,10 +42,6 @@ Tell them to say when they are done. Do not open the files.
 
 If the answer has a warning about `.gitignore`, ask them to add the line `.sbo-skills/` themselves: the folder holds passwords in plain text.
 
-## Adding an environment later
-
-When the developer wants another environment and the setup already exists, do not run `--init` (it erases everything). Run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --add-env <env>`, then continue from step 4 for that file and step 5.
-
 ## 5. Verify
 
 Run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --verify`. It tests the login of every environment, discards the test session and makes the entity index. The answer has no credentials:
@@ -58,6 +54,7 @@ Done when `ok` is true. Tell the developer which environments are ready.
 
 ## Rules
 
+- To add an environment to an existing setup, send the developer to `/service-layer:add-environment`. Never run `--init` for that: it erases everything.
 - Never ask for, accept or repeat the URL, the company database, a user name or a password in the chat. If the developer pastes one, do not repeat or store it; tell them to type it into the file instead and consider the password exposed.
 - Never read, print or edit `.sbo-skills/service-layer/*/credentials.json`, and never write `config.md` or `credentials.json` by hand.
 - Certificates are never validated (self-signed ones are the norm). The developer should work from a network they trust.
