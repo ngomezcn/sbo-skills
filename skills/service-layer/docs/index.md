@@ -1,22 +1,10 @@
----
-name: docs
-description: SAP Business One Service Layer reference (guide v1.29): login and sessions, OData CRUD, query options, batch, UDF/UDT/UDO, attachments, semantic layer and SQL views, SQL Query, ETag, server configuration, webhooks, limitations, DI API comparison, OData protocol reference (headers, ETag, query options, metadata, status codes) under reference/odata/. Needs the Setup done (reads .sbo-skills/service-layer/config.md for the B1 version). Use when writing or debugging code that calls Service Layer, or when asked how a Service Layer feature behaves.
----
-
 # SAP Business One Service Layer
-
-## Before answering
-
-1. Read `.sbo-skills/service-layer/config.md`. If it does not exist, **stop**: tell the developer to run the **setup** skill first, and do not answer from this documentation without it.
-2. Take `versionB1` (for example `FP 2608`) from its front matter. Apply the "Version gate" section below: it says when to open `availability.md`, which lists the whole sections that do not exist in older versions.
-3. `versionOData` (`v1` is OData V3, `v2` is OData V4) is the version the **use** skill calls; keep examples in line with it.
-4. `language` (`en` English, `es` Spanish; English if the line is missing) is the language you answer in. Code, entity names and quotes from the documentation stay as they are.
 
 Pick the row matching the question, open that index, then the single hoja it points to.
 
 ## Version gate
 
-This reference describes FP 2608. Read the developer's B1 version in `.sbo-skills/service-layer/config.md` (if the file or the version is missing, stop and tell the developer to run the Setup). Compare the four-digit `YYMM` number, ignoring `FP`/`SP`. If it is 2608 or higher, skip this gate and do not open `availability.md`. If it is lower, including below the minimum FP 2208, open [availability.md](availability.md) once, before answering anything about webhooks or any other section it lists, even if the router row does not mention a version. It covers whole sections only, never entities or fields: for those, read the object context sheet `context/<Entity>.md` of the Uso tool.
+This reference describes FP 2608. Take the developer's B1 version (`versionB1` of `.sbo-skills/service-layer/config.md`, already read by the entry skill). Compare the four-digit `YYMM` number, ignoring `FP`/`SP`. If it is 2608 or higher, skip this gate and do not open `availability.md`. If it is lower, including below the minimum FP 2208, open [availability.md](availability.md) once, before answering anything about webhooks or any other section it lists, even if the router row does not mention a version. It covers whole sections only, never entities or fields: for those, read the object context sheet `context/<Entity>.md` of the Uso tool.
 
 ## By intent
 

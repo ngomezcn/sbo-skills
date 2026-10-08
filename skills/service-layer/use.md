@@ -1,14 +1,9 @@
----
-name: use
-description: Operate against a real SAP Business One Service Layer from this repo - read entities (by key, a page, a full traversal, a count), read the object context of an entity (fields, user fields, valid values), find which entities an environment exposes, and make any other call the Service Layer allows (create, update, delete, actions, $batch, SQL queries, custom headers, file upload and download) with the generic request command and its dry-run-first write flow. Use when the task needs live data from, or a change in, a configured B1 environment (dev, uat, prod). Needs the Setup done first.
----
-
 # Service Layer: use
 
-Run every command with `node "${CLAUDE_PLUGIN_ROOT}/dist/use.mjs" <command> ...` from the repo root. Every answer is short JSON: `ok`, `status` (HTTP status of the Service Layer, `null` when the failure is the tool's own), `resumen`, and on failure `error` with `code` and `message`.
+Run every command with `node "${CLAUDE_SKILL_DIR}/scripts/use.mjs" <command> ...` from the repo root. Every answer is short JSON: `ok`, `status` (HTTP status of the Service Layer, `null` when the failure is the tool's own), `resumen`, and on failure `error` with `code` and `message`.
 
 - A Service Layer error (`status` is a number) is literal: report its code and message as received.
-- A tool error (`status` is `null`) has a stable code and says what to do. `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED`: run the **setup** skill; do not create files by hand.
+- A tool error (`status` is `null`) has a stable code and says what to do. `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED`: run `/service-layer-setup`; do not create files by hand.
 - With several environments configured, pass `--entorno dev|uat|prod` on every call. With one, it is used.
 - Never read `.sbo-skills/service-layer/*/credentials.json` or `session.json`, and never print them. The tool logs in by itself.
 - The OData version (`v1` or `v2`) is the one the Setup saved. Do not change it.
@@ -51,7 +46,7 @@ The tool makes the index in the Setup and renews it by itself, on any command, w
 request <GET|POST|PATCH|PUT|DELETE> <path> [--header "Name: value"]... [--body '<json>' | --body-file <path> | --file <path>... | --stream-file <path>] [--read] [--execute] [--allow-prod]
 ```
 
-`<path>` is what follows the service root, as the Service Layer documents it: `BusinessPartners('C1')`, `Orders(5)/Cancel`, `SQLQueries('q')/List`, `Items?$filter=ItemCode eq 'A1'`, `$batch`. Do not write `/b1s/v2` (the tool adds the saved OData version) and quote the path in the shell (`$` and `'`). The tool logs in by itself: `Login` and `Logout` are refused. For how a call behaves (which verb, which body, which header), use the **docs** skill.
+`<path>` is what follows the service root, as the Service Layer documents it: `BusinessPartners('C1')`, `Orders(5)/Cancel`, `SQLQueries('q')/List`, `Items?$filter=ItemCode eq 'A1'`, `$batch`. Do not write `/b1s/v2` (the tool adds the saved OData version) and quote the path in the shell (`$` and `'`). The tool logs in by itself: `Login` and `Logout` are refused. For how a call behaves (which verb, which body, which header), read [docs/index.md](docs/index.md).
 
 **Read or write.** A GET runs directly. Everything else is a write, a read-only POST included: it is a dry run until `--execute`. If the developer or the docs say a POST only reads (`SQLQueries('q')/List`), add `--read` and it runs directly (not for PATCH, PUT or DELETE, and not with a file). Never use `--read` to skip the approval of something that changes data.
 
@@ -106,4 +101,4 @@ If the Service Layer answers an unknown field (`Property 'X' of 'Y' is invalid`)
 
 ## Documentation
 
-For how a Service Layer feature behaves, use the **docs** skill, not this one.
+For how a Service Layer feature behaves, read [docs/index.md](docs/index.md), not this file.

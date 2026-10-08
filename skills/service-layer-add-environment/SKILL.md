@@ -1,6 +1,6 @@
 ---
-name: add-environment
-description: Add one more environment (dev, uat or prod) to an existing Service Layer setup without losing what is already configured, then test its login. Use when the developer asks to add, create or connect another environment, or runs /service-layer:add-environment. Needs the setup done first. The developer types the connection data into a file themselves, this skill never handles it.
+name: service-layer-add-environment
+description: Add one more environment (dev, uat or prod) to an existing Service Layer setup without losing what is already configured, then test its login. Use when the developer asks to add, create or connect another environment, or runs /service-layer-add-environment. Needs the setup done first. The developer types the connection data into a file themselves, this skill never handles it.
 ---
 
 # Service Layer: add an environment
@@ -14,11 +14,11 @@ Read `.sbo-skills/service-layer/config.md` (it holds no secrets). Its `language`
 ## 2. Add it
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --add-env uat
+node "${CLAUDE_SKILL_DIR}/scripts/setup.mjs" --add-env uat
 ```
 
-- `SETUP_MISSING`: there is no setup yet. Tell the developer to run `/service-layer:setup` first.
-- `ENVIRONMENT_EXISTS`: it already exists. Tell them to edit its `credentials.json`, or to run `/service-layer:setup` to start over (that erases everything).
+- `SETUP_MISSING`: there is no setup yet. Tell the developer to run `/service-layer-setup` first.
+- `ENVIRONMENT_EXISTS`: it already exists. Tell them to edit its `credentials.json`, or to run `/service-layer-setup` to start over (that erases everything).
 
 The answer lists the new file under `fillIn`. It holds example values (`https://localhost:50000/`, `SBODemoES`, `manager`, `your-password-here`).
 
@@ -32,7 +32,7 @@ Tell them to say when they are done. Do not open the file.
 
 ## 4. Verify
 
-Run `node "${CLAUDE_PLUGIN_ROOT}/dist/setup.mjs" --verify`. It tests every environment and makes the entity index. Read the answer as the setup skill does: `verified`, `indexed`, `pending` (fields still empty, named without values), `failed` (Service Layer `code` and `message`: `-304` wrong user or password, `-306` unknown company, `SL_UNREACHABLE` bad URL). On `pending` or `failed`, ask the developer to correct the file and run `--verify` again.
+Run `node "${CLAUDE_SKILL_DIR}/scripts/setup.mjs" --verify`. It tests every environment and makes the entity index. Read the answer as the setup skill does: `verified`, `indexed`, `pending` (fields still empty, named without values), `failed` (Service Layer `code` and `message`: `-304` wrong user or password, `-306` unknown company, `SL_UNREACHABLE` bad URL). On `pending` or `failed`, ask the developer to correct the file and run `--verify` again.
 
 Done when `ok` is true. Tell the developer the new environment is ready.
 

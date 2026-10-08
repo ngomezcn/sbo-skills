@@ -2,7 +2,5 @@
   "name": "sbo-skills",
   "version": "0.0.1",
   "private": true,
-  "description": "Instalador de los plugins de sbo-skills para varias IAs (pendiente de implementar).",
-  "bin": { "sbo-skills": "bin/sbo-skills.js" },
-  "files": ["bin", "plugins", ".claude-plugin"]
+  "description": "Skills de SAP Business One para Claude Code y otros agentes."
 }

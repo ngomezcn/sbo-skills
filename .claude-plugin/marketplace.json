@@ -6,9 +6,9 @@
   },
   "plugins": [
     {
-      "name": "service-layer",
-      "source": "./plugins/service-layer",
-      "description": "SAP B1 Service Layer en un solo plugin: Setup (credenciales por entorno, version de B1 y de OData), Uso (lecturas y escrituras en seco contra el sistema real) y Documentacion (valida para todas las versiones)."
+      "name": "ngomez-skills",
+      "source": "./",
+      "description": "Skills de SAP B1 en un solo plugin. Service Layer: una skill para consultar y operar contra el sistema real (escrituras en seco por defecto) y otras dos para el Setup y para anadir entornos."
     }
   ]
 }
