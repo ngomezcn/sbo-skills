@@ -19080,7 +19080,10 @@ async function resolveEnvironment(root, requested) {
 // src/use/dump.ts
 import { lstat, mkdir as mkdir2, readdir, rm as rm2, writeFile as writeFile2 } from "node:fs/promises";
 import { isAbsolute, join as join2, relative, resolve } from "node:path";
-var DUMP_MAX_AGE_MS = 24 * 36e5;
+var DUMP_MAX_BYTES = 50 * 1024 * 1024;
+var DUMP_FREE_RATIO = 0.85;
+var DUMP_MIN_AGE_MS = 36e5;
+var DUMP_HARD_LIMIT_BYTES = 1024 * 1024 * 1024;
 function dumpDate(name) {
   const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-[\w-]+$/.exec(name);
   if (!m) return null;
@@ -19155,7 +19158,7 @@ async function writeDump(input) {
     taken.add(key.toLowerCase());
     return key;
   });
-  await Promise.all(input.records.map((record, i) => writeFile2(join2(entityDir, keyFileName(keys[i])), JSON.stringify(record, null, 2))));
+  await Promise.all(input.records.map((record, i) => writeFile2(join2(entityDir, keyFileName(keys[i])), JSON.stringify({ request: input.query, response: record }, null, 2))));
   await writeFile2(
     join2(dir, "_index.json"),
     JSON.stringify({ date: input.now.toISOString(), query: input.query, entitySet: input.entitySet, count: keys.length, ...input.extra, keys }, null, 2)
@@ -19189,15 +19192,40 @@ async function removeDump(root, environment, target) {
   await rm2(dir, { recursive: true, force: true });
   return dir;
 }
-async function sweepOldDumps(root, environment, now) {
-  const removed = [];
-  for (const name of await dumpFolders(root, environment)) {
-    if (now.getTime() - dumpDate(name).getTime() <= DUMP_MAX_AGE_MS) continue;
-    const dir = join2(dumpRoot(root, environment), name);
-    await rm2(dir, { recursive: true, force: true }).then(() => removed.push(dir), () => {
-    });
+async function folderBytes(dir) {
+  let total = 0;
+  for (const entry of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const path = join2(dir, entry.name);
+    if (entry.isDirectory()) total += await folderBytes(path);
+    else total += await lstat(path).then((s) => s.size, () => 0);
   }
-  return removed;
+  return total;
+}
+function dataFullMessage(environment, bytes) {
+  return `The Volcados of "${environment}" take ${Math.round(bytes / 1024 / 1024)} MB (over 1 GB) and all of them are less than 1 hour old, so none can be deleted safely. Too much data is being read: narrow the queries ($select, $filter, $top) and run "clean <id>" for the Volcados that are no longer needed.`;
+}
+async function pruneDumps(root, environment, now, { maxBytes = DUMP_MAX_BYTES, hardLimit = DUMP_HARD_LIMIT_BYTES, freeRatio = DUMP_FREE_RATIO, minAgeMs = DUMP_MIN_AGE_MS } = {}) {
+  const base = dumpRoot(root, environment);
+  const folders = (await dumpFolders(root, environment)).sort((a, b) => dumpDate(a).getTime() - dumpDate(b).getTime() || a.localeCompare(b));
+  const sizes = await Promise.all(folders.map((name) => folderBytes(join2(base, name))));
+  const total = sizes.reduce((sum, n) => sum + n, 0);
+  if (total <= maxBytes) return { removed: [] };
+  const removed = [];
+  let freed = 0;
+  let eligibleLeft = false;
+  for (let i = 0; i < folders.length; i++) {
+    if (now.getTime() - dumpDate(folders[i]).getTime() < minAgeMs) continue;
+    if (freed >= total * freeRatio) {
+      eligibleLeft = true;
+      break;
+    }
+    const dir = join2(base, folders[i]);
+    await rm2(dir, { recursive: true, force: true });
+    removed.push(dir);
+    freed += sizes[i];
+  }
+  const left = total - freed;
+  return { removed, ...!eligibleLeft && left > hardLimit ? { overLimit: left } : {} };
 }
 
 // src/use/entity-index.ts
@@ -19681,8 +19709,10 @@ async function openUse(options, { sweep = true, index = true } = {}) {
   const transport = options.transport ?? defaultTransport;
   const now = options.now ?? (() => /* @__PURE__ */ new Date());
   const newId = options.newId ?? (() => randomBytes(3).toString("hex"));
-  if (sweep) await sweepOldDumps(options.root, environment, now()).catch(() => {
-  });
+  if (sweep) {
+    const pruned = await pruneDumps(options.root, environment, now()).catch(() => null);
+    if (pruned?.overLimit !== void 0) throw new SboError("DATA_FULL", dataFullMessage(environment, pruned.overLimit));
+  }
   const ctx = {
     root: options.root,
     config,
@@ -19715,8 +19745,13 @@ async function cleanDump(options) {
   try {
     const ctx = await openUse(options, { sweep: false });
     const removed = await removeDump(ctx.root, ctx.environment, options.target);
-    const old = await sweepOldDumps(ctx.root, ctx.environment, ctx.now());
-    return success(200, { entorno: ctx.environment, eliminado: removed, caducados: old.length });
+    const pruned = await pruneDumps(ctx.root, ctx.environment, ctx.now());
+    return success(200, {
+      entorno: ctx.environment,
+      eliminado: removed,
+      podados: pruned.removed.length,
+      ...pruned.overLimit !== void 0 ? { aviso: dataFullMessage(ctx.environment, pruned.overLimit) } : {}
+    });
   } catch (e) {
     return failure(e);
   }

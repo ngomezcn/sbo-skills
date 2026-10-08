@@ -21,7 +21,7 @@ Run every command with `node "${CLAUDE_SKILL_DIR}/scripts/use.mjs" <command> ...
 | `entities` | Where the entity index is (see below). Not needed to read it: the files are always at `.sbo-skills/service-layer/<environment>/`. |
 | `clean <id or path>` | Deletes that Volcado. |
 
-`page`, `traverse` and `get` accept `--filter`, `--select`, `--orderby`, `--expand`, passed to the Service Layer as written. Records never come back in the answer: they are written to a Volcado (`ruta`), with `_index.json` and one file per record. Read the files you need from that folder, and run `clean` when done.
+`page`, `traverse` and `get` accept `--filter`, `--select`, `--orderby`, `--expand`, passed to the Service Layer as written. Records never come back in the answer: they are written to a Volcado (`ruta`), with `_index.json` and one file per record, each shaped `{ "request": { method, path }, "response": <raw record> }`. Read the files you need from that folder, and run `clean` when done.
 
 ## Object context
 

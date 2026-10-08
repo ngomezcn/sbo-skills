@@ -1,6 +1,6 @@
 {
   "name": "ngomez-skills",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Skills for SAP Business One. Service Layer: one skill to ask about it and to work with a real system (writes in dry run by default), plus Setup and add-environment.",
   "author": { "name": "ngomez" },
   "repository": "https://github.com/ngomezcn/sbo-skills",

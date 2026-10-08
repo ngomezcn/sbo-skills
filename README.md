@@ -254,5 +254,5 @@ Do **not** allow `request` for other methods (nor `request POST ... --read`): th
 ### Good to know
 
 - The certificate of the Service Layer is never validated (they are usually self-signed): work from a network you trust.
-- Local data lives in `.sbo-skills/service-layer/` of your repo: `config.md`, and per environment the credentials, the session, the object contexts, the entity index and the Volcados. Volcados are removed by `clean` and by the tool after 24 hours.
+- Local data lives in `.sbo-skills/service-layer/` of your repo: `config.md`, and per environment the credentials, the session, the object contexts, the entity index and the Volcados. Volcados are removed by `clean`; when the Volcados of an environment pass 50 MB the tool also deletes the oldest ones, never one under 1 hour old (past 1 GB of young ones it stops with an error).
 - `skills/` is generated from the factory repository; do not edit it here. Only this `README.md` and `.claude-plugin/` are written by hand.
