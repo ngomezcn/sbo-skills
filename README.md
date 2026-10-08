@@ -6,35 +6,52 @@ Working against a live ERP is hard. Pasting passwords into a chat, letting an ag
 
 ## Installation (30-second setup)
 
-Needs Node 20 or later. Pick **one** way in; installing both leaves every skill twice.
+Needs Node 20 or later. There are two ways in. Pick **one**: installing both leaves every skill twice.
 
-### 1. Get the skills
+| | Claude Code plugin | `npx skills` |
+|---|---|---|
+| Command names | with prefix: `/ngomez-skills:service-layer` | no prefix: `/service-layer` |
+| Updates | managed by Claude Code | when you run `npx skills update` |
+| Files | read-only, kept by Claude Code | copied into your repo, yours to edit |
+| Agents | Claude Code | Claude Code and others (only Claude Code is tested) |
 
-**Claude Code plugin** (managed bundle, updates when I ship; commands carry the prefix `ngomez-skills:`):
+The prefix `ngomez-skills:` exists only with the plugin: Claude Code adds it to the skills of a plugin. Skills copied by `npx skills` are plain project skills and have no prefix.
+
+### 1a. As a Claude Code plugin (prefix `ngomez-skills:`)
+
+Inside Claude Code, in your project:
 
 ```
-/plugin marketplace add ngomezcn/sbo-skills
+/plugin marketplace add https://github.com/ngomezcn/sbo-skills.git
 /plugin install ngomez-skills@sbo-skills
 ```
 
-**Any agent, or if you want editable files in your repo** (commands have no prefix):
+Use the full URL. The short form `ngomezcn/sbo-skills` makes Claude Code clone over SSH, and it fails with `Host key verification failed` if you have no SSH key set up for GitHub.
+
+Check it: typing `/ngomez` must list `ngomez-skills:service-layer`, `ngomez-skills:service-layer-setup` and `ngomez-skills:service-layer-add-environment`. If it does not, run `/reload-plugins` or start a new session.
+
+### 1b. With `npx skills` (no prefix)
+
+In the root of your project:
 
 ```bash
 npx skills@latest add ngomezcn/sbo-skills
 ```
 
-Pick the skills and the agents. Take all three: `service-layer` (the one you use day to day), `service-layer-setup` and `service-layer-add-environment`. Each skill carries its own `scripts/` folder, so they work on their own. Update later with `npx skills update`.
+Pick the agents and take **all three** skills: `service-layer` (the one you use day to day), `service-layer-setup` and `service-layer-add-environment`. Each skill carries its own `scripts/` folder, so none depends on the others being there. Update later with `npx skills update`.
+
+Check it: `.claude/skills/` must hold the three folders, and `.claude/skills/service-layer/docs/reference/` must have the whole reference (about 170 files). If the installer printed an error, run the same command again and check that folder.
 
 ### 2. Run the Setup
 
-Open Claude Code **at the root of your repo** and run `/service-layer-setup` (`/ngomez-skills:service-layer-setup` if you installed the plugin), or say *"set up Service Layer"*. It is a conversation:
+Open Claude Code **at the root of your repo** (not inside `.claude`) and run `/service-layer-setup`, with the prefix `/ngomez-skills:service-layer-setup` if you installed the plugin, or say *"set up Service Layer"*. It is a conversation, one question at a time:
 
-1. Claude asks for the B1 version, the OData version (`v1` is OData V3, `v2` is OData V4; it proposes `v2` from FP 2405), which environments you want (`dev`, `uat`, `prod`; at least one) and, for each, the Service Layer URL and the company database. It shows you a summary and waits for your approval.
-2. Claude creates `.sbo-skills/service-layer/` with the configuration and one `credentials.json` per environment, with the URL and company filled in and `userName` and `password` **empty**. It also adds `.sbo-skills/` to your `.gitignore`.
-3. **You** open each `credentials.json` in your editor, type the user and the password and save. Tell Claude when you are done.
+1. Claude asks for the language (English or Spanish), the SAP Business One version, the OData version (`v1` is OData V3, `v2` is OData V4; it proposes `v2` from FP 2405) and which environments you want (`dev`, `uat`, `prod`; at least one).
+2. Claude creates `.sbo-skills/service-layer/` with the configuration and one `credentials.json` per environment, with example values. It also adds `.sbo-skills/` to your `.gitignore`.
+3. **You** open each `credentials.json` in your editor and replace the example values with the Service Layer URL, the company database, your user and your password, then save. Tell Claude when you are done. Claude never asks for these and never opens the file.
 4. Claude tests every login and builds an index of the entities each environment exposes. If a login fails, it tells you the Service Layer error; fix the file and ask it to verify again.
 
-Run the Setup again at any time to start from scratch.
+Run the Setup again at any time to start from scratch. To add one more environment without losing the rest, run `/service-layer-add-environment`.
 
 ### 3. Bam - you're ready to go.
 
@@ -221,12 +238,17 @@ Do **not** allow `request` for other methods (nor `request POST ... --read`): th
 
 | You see | Do |
 |---|---|
-| `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED` | Run the Setup (again), and check that `userName` and `password` are filled in the environment's `credentials.json`. |
+| `SETUP_MISSING`, `ENVIRONMENT_NOT_CONFIGURED` | Run the Setup (again), and check that the example values of the environment's `credentials.json` were replaced with your own. |
 | `ENTITY_NOT_FOUND` | The name is wrong or the entity is not exposed. Claude reads the entity index and retries with the right name. |
 | `PROD_WRITE_NOT_ALLOWED` | A write on `prod` without `--allow-prod`. Approve the production write explicitly if you mean it. |
 | `HEADER_RESERVED` | `Cookie`, `Host` and `Content-Length` belong to the tool. |
 | `FILE_TOO_LARGE`, `FILE_FORBIDDEN` | File over 50 MB, or one of the Setup's own files. |
 | `Property 'X' of 'Y' is invalid` | The object context may be out of date; ask for `context <Entity> --refresh`. |
+| `/service-layer` or `/ngomez-skills:...` is not listed | The skills are not loaded in this session. Plugin: `/reload-plugins` or a new session, and check `/plugin` shows `ngomez-skills` enabled. Open Claude Code at the root of the project, not inside `.claude`. |
+| `/service-layer` has no `ngomez-skills:` prefix | You installed with `npx skills`. The prefix only exists with the plugin (1a); uninstall the copied folders first so you do not have both. |
+| `Host key verification failed` adding the marketplace | Use the full URL, `https://github.com/ngomezcn/sbo-skills.git`, not `ngomezcn/sbo-skills`. |
+| `Filename too long` or `ENOENT ... mkdir` while installing | Windows paths over 260 characters, or a one-off failure of the copy. Install from a project with a shorter path (`C:\work\project`), or enable long paths (`git config --global core.longpaths true` and Windows "Enable Win32 long paths"). With `npx skills`, run the command again and check that `.claude/skills/service-layer/docs/reference/` is complete. |
+| Installed both ways | Every skill shows twice. Keep one: delete the `service-layer*` folders in `.claude/skills/`, or run `/plugin uninstall ngomez-skills@sbo-skills`. |
 | Any Service Layer error with a status | Reported literally: its code and message are the Service Layer's own. |
 
 ### Good to know
